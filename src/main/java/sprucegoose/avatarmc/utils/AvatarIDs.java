@@ -32,6 +32,18 @@ public class AvatarIDs
         { return false; }
     }
 
+    public static boolean itemStackHasAnyAvatarID(JavaPlugin plugin, ItemStack itemStack)
+    {
+        NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+
+        if( container.has(key, PersistentDataType.STRING) )
+        { return true; }
+        else
+        { return false; }
+    }
+
     public static String getItemStackAvatarID(JavaPlugin plugin, ItemStack itemStack, String avatarID)
     {
         NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
