@@ -2,3 +2,7 @@ name: AvatarMC
 version: '${project.version}'
 main: sprucegoose.avatarmc.AvatarMC
 api-version: 1.19
+commands:
+  test:
+    description: Test Command for AvatarMC plugin.
+    usage: /<command>
