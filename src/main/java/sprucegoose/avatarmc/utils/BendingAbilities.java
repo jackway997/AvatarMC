@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class BendingAbilities
 {
     public final static String waterBendKey = "waterbend-key";
+    public final static String airBlastKey = "airblast-key";
 
     public static ItemStack getWaterBend(JavaPlugin plugin, Player player)
     {
@@ -27,6 +28,24 @@ public class BendingAbilities
         skill.setItemMeta(skill_meta);
 
         AvatarIDs.setItemStackAvatarID(plugin, skill, waterBendKey);
+        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
+
+        return skill;
+    }
+
+    public static ItemStack getAirBlast(JavaPlugin plugin, Player player)
+    {
+        ItemStack skill = new ItemStack(Material.BLAZE_ROD, 1);
+
+        ItemMeta skill_meta = skill.getItemMeta();
+        skill_meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "Air Blast");
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
+        lore.add(ChatColor.GRAY + "yeet");
+        skill_meta.setLore(lore);
+        skill.setItemMeta(skill_meta);
+
+        AvatarIDs.setItemStackAvatarID(plugin, skill, airBlastKey);
         PlayerIDs.setItemStackPlayerID(plugin, skill, player);
 
         return skill;

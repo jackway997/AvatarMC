@@ -7,7 +7,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.util.UUID;
 
 public class PlayerIDs
@@ -37,5 +36,4 @@ public class PlayerIDs
         else
         { return false; }
     }
-
 }

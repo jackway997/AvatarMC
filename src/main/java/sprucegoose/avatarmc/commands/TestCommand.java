@@ -24,7 +24,8 @@ public class TestCommand implements CommandExecutor
         {
             ItemStack skill = BendingAbilities.getWaterBend(plugin, player);
             player.getInventory().addItem(skill);
-
+            skill = BendingAbilities.getAirBlast(plugin, player);
+            player.getInventory().addItem(skill);
 
         }
         return true;

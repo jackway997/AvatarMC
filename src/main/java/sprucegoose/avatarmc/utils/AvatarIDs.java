@@ -15,46 +15,55 @@ public class AvatarIDs
     {
             NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
             ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, avatarID);
-            itemStack.setItemMeta(itemMeta);
+            if (itemMeta != null)
+            {
+                itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, avatarID);
+                itemStack.setItemMeta(itemMeta);
+            }
+            else
+                System.out.println("no item meta exists for object"+ itemStack.toString());
     }
 
     public static boolean itemStackHasAvatarID(JavaPlugin plugin, ItemStack itemStack, String avatarID)
     {
         NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        if (itemMeta != null && avatarID != null) {
+            PersistentDataContainer container = itemMeta.getPersistentDataContainer();
 
-        if(     container.has(key, PersistentDataType.STRING) &&
-                container.get(key, PersistentDataType.STRING).equals(avatarID) )
-        { return true; }
+            return container.has(key, PersistentDataType.STRING) &&
+                    container.get(key, PersistentDataType.STRING).equals(avatarID);
+        }
         else
-        { return false; }
+            return false;
     }
 
     public static boolean itemStackHasAnyAvatarID(JavaPlugin plugin, ItemStack itemStack)
     {
         NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-
-        if( container.has(key, PersistentDataType.STRING) )
-        { return true; }
+        if(itemMeta != null)
+        {
+            PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+            return container.has(key, PersistentDataType.STRING);
+        }
         else
-        { return false; }
+            return false;
     }
 
     public static String getItemStackAvatarID(JavaPlugin plugin, ItemStack itemStack, String avatarID)
     {
         NamespacedKey key = new NamespacedKey(plugin, avatarIDKey);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        if (itemMeta != null) {
+            PersistentDataContainer container = itemMeta.getPersistentDataContainer();
 
-        if(container.has(key, PersistentDataType.STRING))
-        {
-            return container.get(key,PersistentDataType.STRING);
+            if (container.has(key, PersistentDataType.STRING))
+                return container.get(key, PersistentDataType.STRING);
+            else
+                return null;
         }
         else
-        { return null; }
+            return null;
     }
 }

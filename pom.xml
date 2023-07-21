@@ -48,8 +48,8 @@
             <artifactId>maven-jar-plugin</artifactId>
             <version>2.3.1</version>
             <configuration>
-                <!--outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Spigot\plugins</outputDirectory-->
-                <outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory>
+                <outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Minecraft Coding\Spigot Test Server\plugins</outputDirectory>
+                <!--outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory-->
             </configuration>
         </plugin>
     </plugins>
@@ -78,6 +78,12 @@
           <artifactId>spigot-api</artifactId>
           <version>1.19.3-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>com.elmakers.mine.bukkit</groupId>
+          <artifactId>EffectLib</artifactId>
+          <version>9.4</version>
+          <scope>compile</scope>
       </dependency>
   </dependencies>
 </project>
