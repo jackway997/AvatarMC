@@ -6,3 +6,6 @@ commands:
   test:
     description: Test Command for AvatarMC plugin.
     usage: /<command>
+  test2:
+    description: Test 2 Command for AvatarMC plugin.
+    usage: /<command>

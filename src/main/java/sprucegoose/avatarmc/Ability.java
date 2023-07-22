@@ -13,6 +13,7 @@ import java.util.UUID;
 public abstract class Ability {
 
     public final HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
+    public final HashMap<UUID, Boolean> benders = new HashMap<UUID, Boolean>();
     protected long cooldown = 3000;
     protected JavaPlugin plugin;
 
@@ -62,6 +63,14 @@ public abstract class Ability {
 
         }
 
+    }
+
+    public void teachPlayer(Player player)
+    {
+        if (benders.getOrDefault(player.getUniqueId(),false))
+            benders.put(player.getUniqueId(), true);
+        else
+            System.out.println("Player already learnt skill");
     }
 
 }
