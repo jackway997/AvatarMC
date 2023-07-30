@@ -9,15 +9,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ItemMetaTag
 {
-    public static <T> void setItemMetaTag(JavaPlugin plugin, ItemStack itemStack, String tagKey, String tagValue)
+    public static void setItemMetaTag(JavaPlugin plugin, ItemStack itemStack, String tagKey, String tagValue)
     {
             NamespacedKey key = new NamespacedKey(plugin, tagKey);
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta != null)
             {
-                itemMeta.getPersistentDataContainer().set(key, T, tagValue);
+                itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, tagValue);
                 itemStack.setItemMeta(itemMeta);
-
             }
             else
                 System.out.println("no item meta exists for object"+ itemStack.toString());

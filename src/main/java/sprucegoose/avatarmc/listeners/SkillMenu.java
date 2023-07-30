@@ -7,15 +7,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.BendingAbilities;
+import sprucegoose.avatarmc.utils.ItemMetaTag;
 
 public class SkillMenu implements Listener
 {
     private JavaPlugin plugin;
+    public final static String invKey = "SkillInventoryKey";
 
     public SkillMenu(JavaPlugin plugin)
     {
@@ -29,6 +32,7 @@ public class SkillMenu implements Listener
         Inventory inv = Bukkit.createInventory(player, 9, skillMenuName);
 
         ItemStack item = BendingAbilities.getWaterBend(plugin, player);
+        ItemMetaTag.setItemMetaTag(plugin, item, invKey, BendingAbilities.waterBendKey);
         inv.setItem(0, item);
         player.openInventory(inv);
     }
@@ -36,18 +40,23 @@ public class SkillMenu implements Listener
     @EventHandler
     public void inventoryClick(InventoryClickEvent e)
     {
+
         if(e.getView().getTitle().equals(skillMenuName))
         {
-            Player player = (Player)e.getView().getPlayer();
-
-            if (e.getCurrentItem() == null)
-                return;
-            else if (AvatarIDs.itemStackHasAvatarID (plugin, e.getCurrentItem(), BendingAbilities.waterBendKey)
-                && !player.getInventory().containsAtLeast(BendingAbilities.getWaterBend(plugin, player),1))
+            if (e.getClickedInventory() != null && e.getClickedInventory().getType() != InventoryType.PLAYER)
             {
-                player.getInventory().addItem(BendingAbilities.getWaterBend(plugin, player));
+                Player player = (Player) e.getView().getPlayer();
+
+                if (e.getCurrentItem() == null)
+                    return;
+                else if (ItemMetaTag.itemStackHasTag(plugin, e.getCurrentItem(), invKey, BendingAbilities.waterBendKey)
+                        && !player.getInventory().containsAtLeast(BendingAbilities.getWaterBend(plugin, player), 1)
+                        && !player.getItemOnCursor().equals(BendingAbilities.getWaterBend(plugin, player)))
+                {
+                    player.getInventory().addItem(BendingAbilities.getWaterBend(plugin, player));
+                }
+                e.setCancelled(true);
             }
-            e.setCancelled(true);
         }
 
     }
