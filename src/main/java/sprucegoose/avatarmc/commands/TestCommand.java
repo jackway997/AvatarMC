@@ -6,8 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import sprucegoose.avatarmc.utils.AvatarIDs;
-import sprucegoose.avatarmc.utils.BendingAbilities;
+import sprucegoose.avatarmc.abilities.AirBlast;
+import sprucegoose.avatarmc.abilities.WaterBend;
 
 public class TestCommand implements CommandExecutor
 {
@@ -22,9 +22,9 @@ public class TestCommand implements CommandExecutor
     {
         if (sender instanceof Player player)
         {
-            ItemStack skill = BendingAbilities.getWaterBend(plugin, player);
+            ItemStack skill = (new WaterBend(plugin)).getAbilityItem(plugin, player);
             player.getInventory().addItem(skill);
-            skill = BendingAbilities.getAirBlast(plugin, player);
+            skill = (new AirBlast(plugin)).getAbilityItem(plugin, player);
             player.getInventory().addItem(skill);
 
         }

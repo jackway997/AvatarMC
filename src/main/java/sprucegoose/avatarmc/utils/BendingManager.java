@@ -1,20 +1,25 @@
 package sprucegoose.avatarmc.utils;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import sprucegoose.avatarmc.Ability;
+import sprucegoose.avatarmc.abilities.AirBlast;
+import sprucegoose.avatarmc.abilities.WaterBend;
 
 import java.util.ArrayList;
 
 public class BendingManager
 {
-    private ArrayList<String> abilities;
-    private JavaPlugin plugin;
+    private final ArrayList<Ability> abilities;
+    private final JavaPlugin plugin;
 
     public BendingManager(JavaPlugin plugin)
     {
         this.plugin = plugin;
+        abilities = new ArrayList<Ability>();
+        registerAbilities();
     }
 
-    private void registerAbility(String ability)
+    private void registerAbility(Ability ability)
     {
         if (!this.abilities.contains(ability))
             this.abilities.add(ability);
@@ -22,11 +27,11 @@ public class BendingManager
 
     private void registerAbilities()
     {
-        registerAbility(BendingAbilities.waterBendKey);
-        registerAbility(BendingAbilities.airBlastKey);
+        registerAbility(new WaterBend(plugin));
+        registerAbility(new AirBlast(plugin));
     }
 
-    public ArrayList<String> getAbilities()
+    public ArrayList<Ability> getAbilities()
     {
         return abilities;
     }

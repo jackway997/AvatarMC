@@ -10,9 +10,12 @@ import sprucegoose.avatarmc.listeners.SkillMenu;
 public class TestCommand2 implements CommandExecutor
 {
     JavaPlugin plugin;
-    public TestCommand2(JavaPlugin plugin)
+    SkillMenu skillMenu;
+
+    public TestCommand2(JavaPlugin plugin, SkillMenu skillMenu)
     {
         this.plugin = plugin;
+        this.skillMenu = skillMenu;
     }
 
     @Override
@@ -20,7 +23,7 @@ public class TestCommand2 implements CommandExecutor
     {
         if (sender instanceof Player player)
         {
-            SkillMenu.openInventory(plugin, player);
+            skillMenu.openInventory(plugin, player);
         }
         return true;
     }
