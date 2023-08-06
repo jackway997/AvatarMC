@@ -52,17 +52,18 @@ public class AirBlast extends Ability implements Listener
         }
     }
 
-    private static void airBlast(Player player) {
-
-        double maxRange = 300.0; // Adjust the maximum range as desired
+    private static void airBlast(Player player)
+    {
+        double maxRange = 5.0; // Adjust the maximum range as desired
         double knockbackStrength = 3; // Adjust the knockback strength as needed
-        double damage = 1;
+        double damage = 2;
 
         Location location = player.getEyeLocation();
         Vector direction = location.getDirection().normalize();
 
         double stepSize = 0.1;
         double distance = 0.0;
+
 
         while (distance < maxRange) {
             Location stepLocation = location.clone().add(direction.clone().multiply(distance));
@@ -72,7 +73,8 @@ public class AirBlast extends Ability implements Listener
                 break;
             }
 
-            RayTraceResult result = player.getWorld().rayTraceEntities(location, direction, distance, e -> e instanceof LivingEntity && e != player);
+            RayTraceResult result = player.getWorld().rayTraceEntities(location, direction, distance,
+                    e -> e instanceof LivingEntity && e != player);
             if (result != null) {
                 Entity hitEntity = result.getHitEntity();
                 if (hitEntity instanceof LivingEntity) {
@@ -93,6 +95,7 @@ public class AirBlast extends Ability implements Listener
         }
     }
 
+    @Override
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
         ItemStack skill = new ItemStack(Material.BLAZE_ROD, 1);
