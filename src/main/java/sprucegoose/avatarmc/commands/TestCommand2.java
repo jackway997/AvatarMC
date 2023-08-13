@@ -4,17 +4,18 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import sprucegoose.avatarmc.abilities.AirBlast;
-import sprucegoose.avatarmc.abilities.WaterBend;
+import sprucegoose.avatarmc.listeners.SkillMenu;
 
-public class TestCommand implements CommandExecutor
+public class TestCommand2 implements CommandExecutor
 {
     JavaPlugin plugin;
-    public TestCommand(JavaPlugin plugin)
+    SkillMenu skillMenu;
+
+    public TestCommand2(JavaPlugin plugin, SkillMenu skillMenu)
     {
         this.plugin = plugin;
+        this.skillMenu = skillMenu;
     }
 
     @Override
@@ -22,11 +23,7 @@ public class TestCommand implements CommandExecutor
     {
         if (sender instanceof Player player)
         {
-            ItemStack skill = (new WaterBend(plugin)).getAbilityItem(plugin, player);
-            player.getInventory().addItem(skill);
-            skill = (new AirBlast(plugin)).getAbilityItem(plugin, player);
-            player.getInventory().addItem(skill);
-
+            skillMenu.openInventory(plugin, player);
         }
         return true;
     }
