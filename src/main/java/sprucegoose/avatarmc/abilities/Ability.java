@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc;
+package sprucegoose.avatarmc.abilities;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -51,7 +51,7 @@ public class Ability {
         {
             int numSeconds = (int)Math.ceil((double)(cooldown - System.currentTimeMillis() + lastTime) / 1000.0);
             // update text on item
-           // System.out.println(numSeconds);
+            //System.out.println(numSeconds);
             item.setAmount(numSeconds);
 
             BukkitScheduler scheduler = Bukkit.getScheduler();

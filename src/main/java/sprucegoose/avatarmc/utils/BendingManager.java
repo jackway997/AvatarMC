@@ -1,8 +1,9 @@
 package sprucegoose.avatarmc.utils;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import sprucegoose.avatarmc.Ability;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.abilities.AirBlast;
+import sprucegoose.avatarmc.abilities.EarthBend;
 import sprucegoose.avatarmc.abilities.WaterBend;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class BendingManager
     {
         registerAbility(new WaterBend(plugin));
         registerAbility(new AirBlast(plugin));
+        registerAbility(new EarthBend(plugin));
     }
 
     public ArrayList<Ability> getAbilities()

@@ -12,7 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import sprucegoose.avatarmc.Ability;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.utils.BendingManager;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 

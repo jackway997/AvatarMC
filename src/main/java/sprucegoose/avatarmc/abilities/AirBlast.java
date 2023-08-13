@@ -15,7 +15,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
-import sprucegoose.avatarmc.Ability;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 
 public class AirBlast extends Ability implements Listener
 {
-
 
     public AirBlast(JavaPlugin plugin)
     {
