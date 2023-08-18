@@ -9,3 +9,9 @@ commands:
   test2:
     description: Test 2 Command for AvatarMC plugin.
     usage: /<command>
+  give_ability:
+    description: Test Command for AvatarMC plugin.
+    usage: /<command> ability_name
+  remove_ability:
+    description: Test Command for AvatarMC plugin.
+    usage: /<command> ability_name

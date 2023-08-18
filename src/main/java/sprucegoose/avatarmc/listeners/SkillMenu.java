@@ -38,7 +38,7 @@ public class SkillMenu implements Listener
         Inventory inv = Bukkit.createInventory(player, invSize, skillMenuName);
 
         // Populate menu with all skills
-        for (Ability ability : bendingManager.getAbilities())
+        for (Ability ability : bendingManager.getPlayerAbilities(player))
         {
             ItemStack item = ability.getAbilityItem(plugin, player);
             ItemMetaTag.setItemMetaTag(plugin, item, invKey, ability.getClass().getSimpleName());

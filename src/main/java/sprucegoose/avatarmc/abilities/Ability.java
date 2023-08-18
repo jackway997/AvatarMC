@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class Ability {
