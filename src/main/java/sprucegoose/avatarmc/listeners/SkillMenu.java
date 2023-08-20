@@ -13,19 +13,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.abilities.Ability;
-import sprucegoose.avatarmc.utils.BendingManager;
+import sprucegoose.avatarmc.abilities.AbilityManager;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 
 public class SkillMenu implements Listener
 {
     private final JavaPlugin plugin;
-    public final BendingManager bendingManager;
+    public final AbilityManager abilityManager;
     public final static String invKey = "SkillInventoryKey";
 
-    public SkillMenu(JavaPlugin plugin, BendingManager bendingManager)
+    public SkillMenu(JavaPlugin plugin, AbilityManager abilityManager)
     {
         this.plugin = plugin;
-        this.bendingManager = bendingManager;
+        this.abilityManager = abilityManager;
     }
 
     private final static String skillMenuName = ChatColor.RED + "Test Inventory";
@@ -38,7 +38,7 @@ public class SkillMenu implements Listener
         Inventory inv = Bukkit.createInventory(player, invSize, skillMenuName);
 
         // Populate menu with all skills
-        for (Ability ability : bendingManager.getPlayerAbilities(player))
+        for (Ability ability : abilityManager.getPlayerAbilities(player))
         {
             ItemStack item = ability.getAbilityItem(plugin, player);
             ItemMetaTag.setItemMetaTag(plugin, item, invKey, ability.getClass().getSimpleName());
@@ -74,7 +74,7 @@ public class SkillMenu implements Listener
                 if (item == null)
                     return;
 
-                for (Ability ability : bendingManager.getAbilities())
+                for (Ability ability : abilityManager.getAbilities())
                     abilityClick(ability, player, item);
 
                 e.setCancelled(true);

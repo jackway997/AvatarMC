@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.utils.AvatarIDs;
+import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class AirBlast extends Ability implements Listener
         if (    slot != null && item != null &&
                 (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, AirBlast.class.getSimpleName()) &&
+                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer()) && !onCooldown(player)
             )
         {
@@ -52,7 +53,7 @@ public class AirBlast extends Ability implements Listener
 
     private static void airBlast(Player player)
     {
-        double maxRange = 5.0; // Adjust the maximum range as desired
+        double maxRange = 8.0; // Adjust the maximum range as desired
         double knockbackStrength = 3; // Adjust the knockback strength as needed
         double damage = 2;
 
@@ -61,7 +62,8 @@ public class AirBlast extends Ability implements Listener
 
         double stepSize = 0.1;
         double distance = 0.0;
-
+        player.getWorld().playSound(player.getLocation().add(direction), Sound.BLOCK_FIRE_EXTINGUISH, 10f, 0.7f);
+        player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, player.getLocation().add(direction).add(0,1,0), 25);
 
         while (distance < maxRange) {
             Location stepLocation = location.clone().add(direction.clone().multiply(distance));
@@ -80,23 +82,23 @@ public class AirBlast extends Ability implements Listener
                     livingEntity.damage(damage); // Adjust the damage as needed
 
                     Location hitLocation = livingEntity.getLocation();
-                    hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 1);
-                    hitLocation.getWorld().playSound(hitLocation, Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.0f);
+                    hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 25);
 
+                    //player.getWorld().playSound(hitLocation, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 0.7f);
                     Vector knockbackDirection = hitLocation.toVector().subtract(location.toVector()).normalize();
                     knockbackDirection.setY(0.15); // Adjust the vertical knockback as needed
                     livingEntity.setVelocity(knockbackDirection.multiply(knockbackStrength));
+                    break;
                 }
             }
 
             distance += stepSize;
         }
     }
-
     @Override
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.BLAZE_ROD, 1);
+        ItemStack skill = new ItemStack(Material.STRING, 1);
 
         ItemMeta skill_meta = skill.getItemMeta();
         skill_meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "Air Blast");
@@ -106,9 +108,25 @@ public class AirBlast extends Ability implements Listener
         skill_meta.setLore(lore);
         skill.setItemMeta(skill_meta);
 
-        AvatarIDs.setItemStackAvatarID(plugin, skill, AirBlast.class.getSimpleName());
+        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
         PlayerIDs.setItemStackPlayerID(plugin, skill, player);
 
         return skill;
+    }
+
+    public ItemStack getSkillBookItem(JavaPlugin plugin)
+    {
+        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
+
+        ItemMeta skill_meta = skillBook.getItemMeta();
+        skill_meta.setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "Air Blast");
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
+        skill_meta.setLore(lore);
+        skillBook.setItemMeta(skill_meta);
+
+        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
+
+        return skillBook;
     }
 }

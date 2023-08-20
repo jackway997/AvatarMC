@@ -6,15 +6,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import sprucegoose.avatarmc.abilities.AirBlast;
-import sprucegoose.avatarmc.abilities.WaterBend;
+import sprucegoose.avatarmc.abilities.Ability;
+import sprucegoose.avatarmc.abilities.AbilityManager;
 
 public class TestCommand implements CommandExecutor
 {
     JavaPlugin plugin;
-    public TestCommand(JavaPlugin plugin)
+    AbilityManager abilityManager;
+    public TestCommand(JavaPlugin plugin, AbilityManager abilityManager)
     {
         this.plugin = plugin;
+        this.abilityManager = abilityManager;
     }
 
     @Override
@@ -22,10 +24,12 @@ public class TestCommand implements CommandExecutor
     {
         if (sender instanceof Player player)
         {
-            ItemStack skill = (new WaterBend(plugin)).getAbilityItem(plugin, player);
-            player.getInventory().addItem(skill);
-            skill = (new AirBlast(plugin)).getAbilityItem(plugin, player);
-            player.getInventory().addItem(skill);
+            for ( Ability ability : abilityManager.getAbilities())
+            {
+                ItemStack skillBook = ability.getSkillBookItem(plugin);
+                player.getInventory().addItem(skillBook);
+            }
+
 
         }
         return true;

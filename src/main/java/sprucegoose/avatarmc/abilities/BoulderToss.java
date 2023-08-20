@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -15,11 +14,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
 import sprucegoose.avatarmc.utils.AvatarIDs;
+import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
 
-public class EarthBend extends Ability implements Listener
+public class BoulderToss extends Ability
 {
     private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private final Map<UUID, Integer> activeBends = new HashMap<>();
@@ -33,12 +33,11 @@ public class EarthBend extends Ability implements Listener
             Material.WARPED_NYLIUM, Material.CRIMSON_NYLIUM, Material.CALCITE, Material.TUFF
     );
 
-    public EarthBend(JavaPlugin plugin)
+    public BoulderToss(JavaPlugin plugin)
     {
         super(plugin);
         setCooldown(1);
     }
-
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
@@ -55,7 +54,7 @@ public class EarthBend extends Ability implements Listener
         if (    slot != null && item != null &&
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, EarthBend.class.getSimpleName()) &&
+                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player))
         {
 
@@ -233,7 +232,7 @@ public class EarthBend extends Ability implements Listener
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.STICK, 1);
+        ItemStack skill = new ItemStack(Material.CLAY_BALL, 1);
         ItemMeta skill_meta = skill.getItemMeta();
         skill_meta.setDisplayName(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "Boulder Toss");
         ArrayList<String> lore = new ArrayList<String>();
@@ -243,9 +242,25 @@ public class EarthBend extends Ability implements Listener
         skill_meta.setLore(lore);
         skill.setItemMeta(skill_meta);
 
-        AvatarIDs.setItemStackAvatarID(plugin, skill, EarthBend.class.getSimpleName());
+        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
         PlayerIDs.setItemStackPlayerID(plugin, skill, player);
 
         return skill;
+    }
+
+    public ItemStack getSkillBookItem(JavaPlugin plugin)
+    {
+        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
+
+        ItemMeta skill_meta = skillBook.getItemMeta();
+        skill_meta.setDisplayName(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "Boulder Toss");
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
+        skill_meta.setLore(lore);
+        skillBook.setItemMeta(skill_meta);
+
+        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
+
+        return skillBook;
     }
 }

@@ -42,7 +42,6 @@ public class PlayerProgression
             while (rs.next())
             {
                 this.PLAYER_ABILITIES.get(uuid).add(rs.getString("ability"));
-                logger.info("loaded into memory");
             }
         } catch (final SQLException e) {
             e.printStackTrace();
@@ -62,14 +61,12 @@ public class PlayerProgression
                 while (rs.next()) {
                     abilities.add(rs.getString("ability"));
                 }
-                logger.info("retrieved abilities using database");
                 return abilities;
             } catch (final SQLException e) {
                 e.printStackTrace();
             }
             return null;
         }
-        logger.info("retrieved abilities using memory");
         return this.PLAYER_ABILITIES.get(uuid);
     }
 
@@ -102,7 +99,6 @@ public class PlayerProgression
         // Remove entry from database regardless
         try (ResultSet rs = db.readQuery("SELECT * FROM player_abilities WHERE uuid = '" + uuid.toString() + "' AND ability = '" + ability +"';")) {
             if (rs.next()) {
-                logger.info("removing ability with query");
                 String playerName = plugin.getServer().getOfflinePlayer(uuid).getName();
                 db.modifyQuery("DELETE FROM player_abilities WHERE uuid = '" + uuid + "' AND ability = '" + ability + "';", async);
                 logger.info(playerName +" unlearnt "+ ability +".");

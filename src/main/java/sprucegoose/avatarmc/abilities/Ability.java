@@ -3,6 +3,7 @@ package sprucegoose.avatarmc.abilities;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -12,18 +13,23 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class Ability {
+public abstract class Ability implements Listener {
 
     public final HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
-    public final HashMap<UUID, Boolean> benders = new HashMap<UUID, Boolean>();
+
     protected long cooldown = 3000;
     protected JavaPlugin plugin;
+    private static final String skillBookKey = "AvatarMCSkillBookKey";
 
     public Ability(JavaPlugin plugin)
     {
         this.plugin = plugin;
     }
 
+    public static final String getSkillBookKey()
+    {
+        return skillBookKey;
+    }
     public void setCooldown(long cooldown)
     {
         this.cooldown = cooldown;
@@ -65,17 +71,18 @@ public class Ability {
         }
     }
 
-    public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
+    public final String getAbilityID()
     {
-        return null;
+        return this.getClass().getSimpleName();
+    }
+    public final String getAbilityBookID()
+    {
+        return this.getClass().getSimpleName() + "_book";
     }
 
-    public void teachPlayer(Player player)
-    {
-        if (benders.getOrDefault(player.getUniqueId(),false))
-            benders.put(player.getUniqueId(), true);
-        else
-            System.out.println("Player already learnt skill");
-    }
+
+    public abstract ItemStack getAbilityItem(JavaPlugin plugin, Player player);
+
+    public abstract ItemStack getSkillBookItem(JavaPlugin plugin);
 
 }

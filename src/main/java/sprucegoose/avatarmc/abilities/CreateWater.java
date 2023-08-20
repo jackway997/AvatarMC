@@ -19,10 +19,10 @@ import sprucegoose.avatarmc.utils.*;
 
 import java.util.ArrayList;
 
-public class WaterBend extends Ability implements Listener
+public class CreateWater extends Ability implements Listener
 {
 
-    public WaterBend(JavaPlugin plugin)
+    public CreateWater(JavaPlugin plugin)
     {
         super(plugin);
         setCooldown(2000);
@@ -38,7 +38,7 @@ public class WaterBend extends Ability implements Listener
         if (    slot != null && item != null &&
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, WaterBend.class.getSimpleName()) &&
+                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
             )
         {
@@ -70,19 +70,35 @@ public class WaterBend extends Ability implements Listener
         ItemStack skill = new ItemStack(Material.LAPIS_LAZULI, 1);
 
         ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "Create Water");
+        skill_meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "Create Water");
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.add(ChatColor.GRAY + "extracts water");
         lore.add(ChatColor.GRAY + "from da erf");
         skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(1);
         skill.setItemMeta(skill_meta);
 
-        AvatarIDs.setItemStackAvatarID(plugin, skill, WaterBend.class.getSimpleName());
+        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
         PlayerIDs.setItemStackPlayerID(plugin, skill, player);
 
         return skill;
     }
 
+    public ItemStack getSkillBookItem(JavaPlugin plugin)
+    {
+        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
+
+        ItemMeta skill_meta = skillBook.getItemMeta();
+        skill_meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "Create Water");
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
+        skill_meta.setLore(lore);
+        skillBook.setItemMeta(skill_meta);
+
+        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
+
+        return skillBook;
+    }
 
 }
