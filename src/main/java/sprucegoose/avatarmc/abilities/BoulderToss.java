@@ -19,11 +19,16 @@ import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
 
+/*
+Notes: bugs: when you toss the same block multiple times, sometimes the
+ scheduler will remove a block from a previous toss
+ */
+
 public class BoulderToss extends Ability
 {
     private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private final Map<UUID, Integer> activeBends = new HashMap<>();
-    private int maxNumBends = 3;
+    private final int maxNumBends = 1;
 
     private final List<Material> ALLOWED_BLOCK_TYPES = Arrays.asList(
             Material.GRASS_BLOCK, Material.DIRT, Material.STONE, Material.COBBLESTONE,
@@ -35,7 +40,7 @@ public class BoulderToss extends Ability
 
     public BoulderToss(JavaPlugin plugin)
     {
-        super(plugin);
+        super(plugin, ELEMENT_TYPE.earth);
         setCooldown(1);
     }
 
@@ -119,7 +124,6 @@ public class BoulderToss extends Ability
     {
         //plugin.getLogger().info("Launching block.");
 
-        UUID playerUUID = player.getUniqueId(); // Get the player's UUID
         Location blockLocation = block.getLocation();
 
         explosionOccurred.put(player.getUniqueId(), false);
@@ -257,6 +261,7 @@ public class BoulderToss extends Ability
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
         skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(this.getBookModelData());
         skillBook.setItemMeta(skill_meta);
 
         ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());

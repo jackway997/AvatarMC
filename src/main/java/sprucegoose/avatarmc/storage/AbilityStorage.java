@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class PlayerProgression
+public class AbilityStorage
 {
     MySQL db;
     JavaPlugin plugin;
@@ -16,7 +16,7 @@ public class PlayerProgression
 
     private final Map<UUID, Set<String>> PLAYER_ABILITIES = new HashMap<>();
 
-    public PlayerProgression(JavaPlugin plugin, MySQL db)
+    public AbilityStorage(JavaPlugin plugin, MySQL db)
     {
         this.plugin = plugin;
         logger = plugin.getLogger();
@@ -25,7 +25,7 @@ public class PlayerProgression
     }
 
     public void setup() {
-        // Create pk_statKeys table.
+        // Create player_abilities table.
         if (!db.tableExists("player_abilities"))
         {
             logger.info("Creating player_abilities table");
@@ -48,11 +48,6 @@ public class PlayerProgression
         }
     }
 
-    public Set<String> getAbilities(Player player)
-    {
-        return getAbilities(player.getUniqueId());
-    }
-
     public Set<String> getAbilities(final UUID uuid) {
         // If the player is offline, pull value from database.
         if (!this.PLAYER_ABILITIES.containsKey(uuid)) {
@@ -70,8 +65,8 @@ public class PlayerProgression
         return this.PLAYER_ABILITIES.get(uuid);
     }
 
-    // Create seperate method for offline player
-    public void giveAbility(final UUID uuid, String ability, final boolean async) {
+    public void giveAbility(final UUID uuid, String ability, final boolean async)
+    {
         if (this.PLAYER_ABILITIES.containsKey(uuid)) //Only add to Map if player is loaded in
         {
             this.PLAYER_ABILITIES.get(uuid).add(ability);
@@ -91,7 +86,6 @@ public class PlayerProgression
         }
     }
 
-    // Create seperate method for offline player
     public void removeAbility(final UUID uuid, String ability, final boolean async) {
         if (this.PLAYER_ABILITIES.containsKey(uuid)) //Only add to Map if player is loaded in
             this.PLAYER_ABILITIES.get(uuid).remove(ability);

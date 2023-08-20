@@ -10,8 +10,14 @@ commands:
     description: Test 2 Command for AvatarMC plugin.
     usage: /<command>
   give_ability:
-    description: Test Command for AvatarMC plugin.
+    description: teaches player ability
     usage: /<command> ability_name
   remove_ability:
-    description: Test Command for AvatarMC plugin.
+    description: removes ability from player
     usage: /<command> ability_name
+  set_bender:
+    description: sets bending type for player
+    usage: /<command> [player_name] ability_name
+  remove_bender:
+    description: Removes bending from player
+    usage: /<command> [player_name]

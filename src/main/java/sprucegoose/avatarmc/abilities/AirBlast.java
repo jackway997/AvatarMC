@@ -26,7 +26,7 @@ public class AirBlast extends Ability implements Listener
 
     public AirBlast(JavaPlugin plugin)
     {
-        super(plugin);
+        super(plugin, ELEMENT_TYPE.air);
         setCooldown(3000);
     }
 
@@ -123,6 +123,7 @@ public class AirBlast extends Ability implements Listener
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
         skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(this.getBookModelData());
         skillBook.setItemMeta(skill_meta);
 
         ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());

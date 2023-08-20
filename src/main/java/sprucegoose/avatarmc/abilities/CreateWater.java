@@ -16,7 +16,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import sprucegoose.avatarmc.utils.*;
-
 import java.util.ArrayList;
 
 public class CreateWater extends Ability implements Listener
@@ -24,7 +23,7 @@ public class CreateWater extends Ability implements Listener
 
     public CreateWater(JavaPlugin plugin)
     {
-        super(plugin);
+        super(plugin, ELEMENT_TYPE.water);
         setCooldown(2000);
     }
 
@@ -94,8 +93,8 @@ public class CreateWater extends Ability implements Listener
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
         skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(this.getBookModelData());
         skillBook.setItemMeta(skill_meta);
-
         ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
 
         return skillBook;
