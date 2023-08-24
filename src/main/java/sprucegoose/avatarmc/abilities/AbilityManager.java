@@ -13,6 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.AbilityStorage;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 
@@ -27,20 +28,27 @@ public class AbilityManager implements Listener
     private final AbilityStorage abilityStorage;
     private final HashMap<String, Ability> abilityMatrix = new HashMap<>();
     private final ProgressionManager progressionManager;
+    private final RegionProtectionManager regProtManager;
 
-    public AbilityManager(JavaPlugin plugin, AbilityStorage abilityStorage, ProgressionManager progressionManager)
+    public AbilityManager(JavaPlugin plugin, AbilityStorage abilityStorage, ProgressionManager progressionManager,
+                          RegionProtectionManager regProtManager)
     {
         this.plugin = plugin;
         this.abilityStorage = abilityStorage;
         this.progressionManager = progressionManager;
+        this.regProtManager = regProtManager;
         registerAbilities();
     }
 
     private void registerAbilities()
     {
-        registerAbility(new CreateWater(plugin));
-        registerAbility(new AirBlast(plugin));
-        registerAbility(new BoulderToss(plugin));
+        registerAbility(new CreateWater(plugin, regProtManager));
+        registerAbility(new AirBlast(plugin, regProtManager));
+        registerAbility(new BoulderToss(plugin, regProtManager));
+        registerAbility(new WaterSymbol(plugin, regProtManager));
+        registerAbility(new FireSymbol(plugin, regProtManager));
+        registerAbility(new AirSymbol(plugin, regProtManager));
+        registerAbility(new EarthSymbol(plugin, regProtManager));
     }
 
     private void registerAbility(Ability ability)

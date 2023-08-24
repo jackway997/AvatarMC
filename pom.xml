@@ -70,6 +70,16 @@
           <id>sonatype</id>
           <url>https://oss.sonatype.org/content/groups/public/</url>
       </repository>
+      <!-- GriefPrevention, Towny and SaberFactions Repo -->
+      <repository>
+          <id>jitpack.io</id>
+          <url>https://jitpack.io</url>
+      </repository>
+      <!-- WorldGuard and WorldEdit Repo -->
+      <repository>
+          <id>sk89q-repo</id>
+          <url>https://maven.enginehub.org/repo/</url>
+      </repository>
   </repositories>
 
   <dependencies>
@@ -85,5 +95,26 @@
           <version>9.4</version>
           <scope>compile</scope>
       </dependency>
+      <dependency>
+          <groupId>org.jetbrains</groupId>
+          <artifactId>annotations</artifactId>
+          <version>13.0</version>
+          <scope>compile</scope>
+      </dependency>
+      <!-- SaberFactions -->
+      <dependency>
+          <groupId>com.github.SaberLLC</groupId>
+          <artifactId>Saber-Factions</artifactId>
+          <version>1.6.x-SNAPSHOT</version>
+          <scope>provided</scope>
+      </dependency>
+      <!-- WorldEdit / WorldGuard -->
+      <dependency>
+          <groupId>com.sk89q.worldguard</groupId>
+          <artifactId>worldguard-bukkit</artifactId>
+          <version>7.0.8</version>
+          <scope>provided</scope>
+      </dependency>
   </dependencies>
+
 </project>

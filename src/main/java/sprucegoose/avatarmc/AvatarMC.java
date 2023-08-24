@@ -5,6 +5,7 @@ import sprucegoose.avatarmc.abilities.*;
 import sprucegoose.avatarmc.commands.*;
 import sprucegoose.avatarmc.listeners.CraftBlocks;
 import sprucegoose.avatarmc.listeners.SkillMenu;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.MySQL;
 import sprucegoose.avatarmc.storage.AbilityStorage;
 import sprucegoose.avatarmc.storage.ProgressionStorage;
@@ -17,7 +18,7 @@ public final class AvatarMC extends JavaPlugin
     private AbilityManager abilityManager;
     private ProgressionManager progressionManager;
     private SkillMenu skillMenuManager;
-
+    private RegionProtectionManager regionProtectionManager;
     @Override
     public void onEnable()
     {
@@ -35,9 +36,11 @@ public final class AvatarMC extends JavaPlugin
         abilityStorage = new AbilityStorage(this, db);
         progressionStorage = new ProgressionStorage(this, db);
 
+        regionProtectionManager = new RegionProtectionManager();
         progressionManager = new ProgressionManager(this, progressionStorage);
-        abilityManager = new AbilityManager(this, abilityStorage, progressionManager);
+        abilityManager = new AbilityManager(this, abilityStorage, progressionManager, regionProtectionManager);
         skillMenuManager = new SkillMenu(this, abilityManager);
+
 
         // Plugin startup logic
         // Register commands
@@ -48,11 +51,12 @@ public final class AvatarMC extends JavaPlugin
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
 
-        // Register event listeners
-        getServer().getPluginManager().registerEvents(new CreateWater(this), this);
-        getServer().getPluginManager().registerEvents(new AirBlast(this), this);
-        getServer().getPluginManager().registerEvents(new BoulderToss(this), this);
-        getServer().getPluginManager().registerEvents(new CraftBlocks(this), this);
+        // Register ability listeners
+        for ( Ability ability : abilityManager.getAbilities())
+        {
+            getServer().getPluginManager().registerEvents(ability, this);
+        }
+        // Register Misc listeners
         getServer().getPluginManager().registerEvents(new SkillMenu(this, abilityManager), this);
         getServer().getPluginManager().registerEvents(abilityManager, this);
     }

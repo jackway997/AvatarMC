@@ -15,15 +15,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.*;
 import java.util.ArrayList;
 
 public class CreateWater extends Ability implements Listener
 {
 
-    public CreateWater(JavaPlugin plugin)
+    public CreateWater(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
-        super(plugin, ELEMENT_TYPE.water);
+        super(plugin, regProtMan, ELEMENT_TYPE.water, ABILITY_LEVEL.beginner);
         setCooldown(2000);
     }
 
@@ -38,7 +39,8 @@ public class CreateWater extends Ability implements Listener
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
                 AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
+                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) &&
+                !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)
             )
         {
             addCooldown(player, item);
@@ -84,20 +86,5 @@ public class CreateWater extends Ability implements Listener
         return skill;
     }
 
-    public ItemStack getSkillBookItem(JavaPlugin plugin)
-    {
-        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
-
-        ItemMeta skill_meta = skillBook.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "Create Water");
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
-        skill_meta.setLore(lore);
-        skill_meta.setCustomModelData(this.getBookModelData());
-        skillBook.setItemMeta(skill_meta);
-        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
-
-        return skillBook;
-    }
 
 }

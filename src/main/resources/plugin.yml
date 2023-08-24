@@ -2,6 +2,7 @@ name: AvatarMC
 version: '${project.version}'
 main: sprucegoose.avatarmc.AvatarMC
 api-version: 1.19
+depend: [WorldGuard, Factions]
 commands:
   test:
     description: Test Command for AvatarMC plugin.

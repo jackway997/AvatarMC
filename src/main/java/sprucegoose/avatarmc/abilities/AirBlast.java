@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
@@ -24,9 +25,9 @@ import java.util.ArrayList;
 public class AirBlast extends Ability implements Listener
 {
 
-    public AirBlast(JavaPlugin plugin)
+    public AirBlast(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
-        super(plugin, ELEMENT_TYPE.air);
+        super(plugin, regProtManager, ELEMENT_TYPE.air, ABILITY_LEVEL.adept);
         setCooldown(3000);
     }
 
@@ -114,20 +115,4 @@ public class AirBlast extends Ability implements Listener
         return skill;
     }
 
-    public ItemStack getSkillBookItem(JavaPlugin plugin)
-    {
-        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
-
-        ItemMeta skill_meta = skillBook.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "Air Blast");
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
-        skill_meta.setLore(lore);
-        skill_meta.setCustomModelData(this.getBookModelData());
-        skillBook.setItemMeta(skill_meta);
-
-        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
-
-        return skillBook;
-    }
 }

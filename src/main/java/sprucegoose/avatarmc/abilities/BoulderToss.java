@@ -13,6 +13,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
@@ -38,9 +39,9 @@ public class BoulderToss extends Ability
             Material.WARPED_NYLIUM, Material.CRIMSON_NYLIUM, Material.CALCITE, Material.TUFF
     );
 
-    public BoulderToss(JavaPlugin plugin)
+    public BoulderToss(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
-        super(plugin, ELEMENT_TYPE.earth);
+        super(plugin, regProtManager, ELEMENT_TYPE.earth, ABILITY_LEVEL.expert);
         setCooldown(1);
     }
 
@@ -252,20 +253,4 @@ public class BoulderToss extends Ability
         return skill;
     }
 
-    public ItemStack getSkillBookItem(JavaPlugin plugin)
-    {
-        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
-
-        ItemMeta skill_meta = skillBook.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "Boulder Toss");
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
-        skill_meta.setLore(lore);
-        skill_meta.setCustomModelData(this.getBookModelData());
-        skillBook.setItemMeta(skill_meta);
-
-        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
-
-        return skillBook;
-    }
 }

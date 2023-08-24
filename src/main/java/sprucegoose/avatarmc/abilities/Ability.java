@@ -1,28 +1,40 @@
 package sprucegoose.avatarmc.abilities;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
+import sprucegoose.avatarmc.utils.ItemMetaTag;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
 public abstract class Ability implements Listener {
 
+
     public enum ELEMENT_TYPE {air, water, earth, fire}
+    public enum ABILITY_LEVEL {beginner, adept, expert, master}
     public final HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
     private ELEMENT_TYPE element;
+    private ABILITY_LEVEL level;
     protected long cooldown = 3000;
     protected JavaPlugin plugin;
+    protected RegionProtectionManager regProtManager;
     private static final String skillBookKey = "AvatarMCSkillBookKey";
 
-    public Ability(JavaPlugin plugin, ELEMENT_TYPE element)
+    public Ability(JavaPlugin plugin, RegionProtectionManager regProtManager, ELEMENT_TYPE element, ABILITY_LEVEL level)
     {
         this.plugin = plugin;
+        this.regProtManager = regProtManager;
         this.element = element;
+        this.level = level;
     }
 
     public ELEMENT_TYPE getElement(){
@@ -65,6 +77,23 @@ public abstract class Ability implements Listener {
         }
     }
 
+    protected ChatColor getBookColour()
+    {
+        switch(level)
+        {
+            case beginner: return ChatColor.GRAY;
+            case adept: return ChatColor.BLUE;
+            case expert: return ChatColor.DARK_PURPLE;
+            case master: return ChatColor.GOLD;
+            default: return ChatColor.BLACK;
+        }
+    }
+
+    public String getDisplayName()
+    {
+        return getAbilityID(); // to be updated
+    }
+
     public void updateCooldownDisplay(Player player, ItemStack item)
     {
         Long lastTime = cooldowns.get(player.getUniqueId());
@@ -103,6 +132,19 @@ public abstract class Ability implements Listener {
 
     public abstract ItemStack getAbilityItem(JavaPlugin plugin, Player player);
 
-    public abstract ItemStack getSkillBookItem(JavaPlugin plugin);
+    public ItemStack getSkillBookItem(JavaPlugin plugin)
+    {
+        ItemStack skillBook = new ItemStack(Material.BOOK, 1);
+        ItemMeta skill_meta = skillBook.getItemMeta();
+        String displayName = getBookColour() + "" + ChatColor.BOLD + getDisplayName();
+        skill_meta.setDisplayName(displayName);
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
+        skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(this.getBookModelData());
+        skillBook.setItemMeta(skill_meta);
+        ItemMetaTag.setItemMetaTag(plugin, skillBook, getSkillBookKey(), getAbilityBookID());
 
+        return skillBook;
+    }
 }
