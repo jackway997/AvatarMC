@@ -80,7 +80,6 @@ public class ImageParticles {
         return getParticles(location, location.getPitch(), location.getYaw());
     }
 
-
     private void renderParticles(int sensitivity) {
         int height=image.getHeight();
         int width=image.getWidth();
@@ -122,6 +121,13 @@ public class ImageParticles {
     {
         renderImage(plugin, player.getLocation(), imagePath);
     }
+
+    public static void renderUprightImage(Plugin plugin, Location location, String imagePath)
+    {
+        location.setPitch(0);
+        renderImage(plugin, location, imagePath);
+    }
+
     public static void renderImage(Plugin plugin, Location location, String imagePath)
     {
         File file=new File(plugin.getDataFolder(),imagePath); //location of the image
@@ -132,16 +138,16 @@ public class ImageParticles {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        image = resize(image, 50,49);
+        image = resize(image, 50,50);
         ImageParticles particles=new ImageParticles(image,1);
 
         //width = 50 , height = 10
-        particles.setAnchor(25, 0);
+        particles.setAnchor(25, 25);
         // 0.1 means 10 particles in a block
         particles.setDisplayRatio(0.1);
 
         //get the image on same orientation as that of the location
-        Map<Location, Color> particle = particles.getParticles(location,0 ,location.getYaw());
+        Map<Location, Color> particle = particles.getParticles(location,location.getPitch() ,location.getYaw());
 
         for(Location spot:particle.keySet()) {
             Color color=particle.get(spot);

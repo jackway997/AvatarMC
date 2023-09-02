@@ -22,10 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class EarthSymbol extends Ability implements Listener
+public class EarthTribute extends Ability implements Listener
 {
 
-    public EarthSymbol(JavaPlugin plugin, RegionProtectionManager regProtMan)
+    public EarthTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.earth, ABILITY_LEVEL.beginner);
         setCooldown(5000);
@@ -57,7 +57,7 @@ public class EarthSymbol extends Ability implements Listener
     {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-        Location location = player.getLocation().add(0,2,0);
+        Location location = player.getLocation().add(0,4.5,0);
         location.getWorld().playSound(location, Sound.BLOCK_BEACON_ACTIVATE, 0.7f, 1.0f);
 
         if (!activeAbilities.containsKey(uuid))
@@ -66,7 +66,7 @@ public class EarthSymbol extends Ability implements Listener
             BukkitScheduler scheduler = Bukkit.getScheduler();
             BukkitTask task = scheduler.runTaskTimer(plugin, () ->
             {
-                ImageParticles.renderImage(plugin, location, "graphics/earth_symbol.png");
+                ImageParticles.renderUprightImage(plugin, location, "graphics/earth_symbol.png");
 
             }, 0, 2L);
             activeAbilities.put(uuid, task);
@@ -83,21 +83,9 @@ public class EarthSymbol extends Ability implements Listener
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.BROWN_DYE, 1);
-
-        ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "Earth tribute");
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.add(ChatColor.GRAY + "Proudly display the");
         lore.add(ChatColor.GRAY + "symbol of your people");
-        skill_meta.setLore(lore);
-        //skill_meta.setCustomModelData(2);
-        skill.setItemMeta(skill_meta);
-
-        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
-        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
-
-        return skill;
+        return getAbilityItem(plugin, player, lore, 1);
     }
 }

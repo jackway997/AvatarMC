@@ -52,10 +52,6 @@ public class BoulderToss extends Ability
         EquipmentSlot slot = e.getHand();
         ItemStack item = e.getItem();
 
-        if (e.getHand() != EquipmentSlot.HAND) {
-            return;
-        }
-
         // Check if the player is holding the Earth item
         if (    slot != null && item != null &&
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
@@ -237,20 +233,9 @@ public class BoulderToss extends Ability
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.CLAY_BALL, 1);
-        ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "Boulder Toss");
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.add(ChatColor.GRAY + "Boulder go brrrrrrr");
-        skill_meta.setCustomModelData(1);
-        skill_meta.setLore(lore);
-        skill.setItemMeta(skill_meta);
-
-        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
-        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
-
-        return skill;
+        return getAbilityItem(plugin, player, lore, 2);
     }
 
 }

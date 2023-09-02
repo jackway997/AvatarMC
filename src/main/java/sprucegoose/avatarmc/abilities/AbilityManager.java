@@ -42,19 +42,21 @@ public class AbilityManager implements Listener
 
     private void registerAbilities()
     {
+        registerAbility(new WaterTribute(plugin, regProtManager));
+        registerAbility(new FireTribute(plugin, regProtManager));
+        registerAbility(new AirTribute(plugin, regProtManager));
+        registerAbility(new EarthTribute(plugin, regProtManager));
         registerAbility(new CreateWater(plugin, regProtManager));
         registerAbility(new AirBlast(plugin, regProtManager));
         registerAbility(new BoulderToss(plugin, regProtManager));
-        registerAbility(new WaterSymbol(plugin, regProtManager));
-        registerAbility(new FireSymbol(plugin, regProtManager));
-        registerAbility(new AirSymbol(plugin, regProtManager));
-        registerAbility(new EarthSymbol(plugin, regProtManager));
+        registerAbility(new FeatherFlight(plugin, regProtManager));
+        registerAbility(new FireTrail(plugin, regProtManager));
     }
 
     private void registerAbility(Ability ability)
     {
         this.abilities.add(ability);
-        this.abilityMatrix.put(ability.getClass().getSimpleName(), ability);
+        this.abilityMatrix.put(ability.getAbilityID(), ability);
     }
 
     public Set<Ability> getAbilities()

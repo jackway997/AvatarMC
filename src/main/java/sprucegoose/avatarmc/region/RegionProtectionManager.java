@@ -15,16 +15,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.bukkit.Bukkit.getServer;
+
 public class RegionProtectionManager
 {
-    public RegionProtectionManager()
+    public RegionProtectionManager(JavaPlugin plugin)
     {
 
         if (enabled("WorldGuard"))
         {
-            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard"),
-                    new WorldGuard());
+            WorldGuard wg =new WorldGuard();
+            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard"), wg);
             System.out.println("World Guard Registered!!!!");
+            getServer().getPluginManager().registerEvents(wg, plugin);
         }
         if (enabled("Factions"))
         {

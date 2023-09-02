@@ -35,23 +35,25 @@ public class CreateWater extends Ability implements Listener
         ItemStack item = e.getItem();
         Player player = e.getPlayer();
 
+        Block targetBlockLocation = player.getTargetBlock(null, 100).getRelative(e.getBlockFace());
+
         if (    slot != null && item != null &&
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
+                targetBlockLocation.isEmpty() &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
                 AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) &&
-                !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)
+                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) /*&&
+                !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)*/
             )
         {
             addCooldown(player, item);
-            createWater(plugin, e);
+            createWater(plugin, targetBlockLocation);
             e.setCancelled(true);
         }
     }
 
-    private static void createWater(JavaPlugin plugin, PlayerInteractEvent event)
+    private static void createWater(JavaPlugin plugin, Block targetBlockLocation)
     {
-        Block targetBlockLocation = event.getPlayer().getTargetBlock(null, 100).getRelative(event.getBlockFace());
         targetBlockLocation.setType(Material.WATER);
         targetBlockLocation.getWorld().playSound(targetBlockLocation.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 0.5f, 1.0f);
 
@@ -68,22 +70,10 @@ public class CreateWater extends Ability implements Listener
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.LAPIS_LAZULI, 1);
-
-        ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "Create Water");
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.add(ChatColor.GRAY + "extracts water");
         lore.add(ChatColor.GRAY + "from da erf");
-        skill_meta.setLore(lore);
-        skill_meta.setCustomModelData(1);
-        skill.setItemMeta(skill_meta);
-
-        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
-        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
-
-        return skill;
+        return getAbilityItem(plugin, player, lore, 2);
     }
 
 

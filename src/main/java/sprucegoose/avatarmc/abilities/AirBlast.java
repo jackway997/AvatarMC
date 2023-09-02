@@ -99,20 +99,8 @@ public class AirBlast extends Ability implements Listener
     @Override
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
-        ItemStack skill = new ItemStack(Material.STRING, 1);
-
-        ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(ChatColor.GRAY + "" + ChatColor.BOLD + "Air Blast");
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.add(ChatColor.GRAY + "yeet");
-        skill_meta.setLore(lore);
-        skill.setItemMeta(skill_meta);
-
-        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
-        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
-
-        return skill;
+        return getAbilityItem(plugin, player, lore, 2);
     }
-
 }

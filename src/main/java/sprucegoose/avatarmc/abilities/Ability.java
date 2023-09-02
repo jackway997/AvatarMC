@@ -10,7 +10,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
+import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
+import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,31 +69,42 @@ public abstract class Ability implements Listener {
 
     protected int getBookModelData()
     {
-        switch(element)
-        {
-            case air: return 1;
-            case earth: return 2;
-            case fire: return 3;
-            case water: return 4;
-            default: return 0;
-        }
+        return switch (element) {
+            case air -> 1;
+            case earth -> 2;
+            case fire -> 3;
+            case water -> 4;
+        };
     }
 
     protected ChatColor getBookColour()
     {
-        switch(level)
-        {
-            case beginner: return ChatColor.GRAY;
-            case adept: return ChatColor.BLUE;
-            case expert: return ChatColor.DARK_PURPLE;
-            case master: return ChatColor.GOLD;
-            default: return ChatColor.BLACK;
-        }
+        return switch (level) {
+            case beginner -> ChatColor.GRAY;
+            case adept -> ChatColor.BLUE;
+            case expert -> ChatColor.DARK_PURPLE;
+            case master -> ChatColor.GOLD;
+        };
     }
 
-    public String getDisplayName()
+    protected ChatColor getSkillTitleColor()
     {
-        return getAbilityID(); // to be updated
+        return switch (element) {
+            case air -> ChatColor.GRAY;
+            case earth -> ChatColor.DARK_GREEN;
+            case fire -> ChatColor.RED;
+            case water -> ChatColor.AQUA;
+        };
+    }
+
+    protected Material getAbililityMaterial()
+    {
+        return switch (element) {
+            case air -> Material.WHITE_DYE;
+            case earth -> Material.BROWN_DYE;
+            case fire -> Material.RED_DYE;
+            case water -> Material.LIGHT_BLUE_DYE;
+        };
     }
 
     public void updateCooldownDisplay(Player player, ItemStack item)
@@ -111,32 +124,50 @@ public abstract class Ability implements Listener {
             {
                 updateCooldownDisplay(player, item);
             }, 20L);
-
         }
     }
 
     public final String getAbilityID()
     {
-        return this.getClass().getSimpleName();
+        return (this.getClass().getSimpleName()).replaceAll("(?=[A-Z]+)", " ").trim();
     }
 
     public String toString()
     {
-        return this.getClass().getSimpleName();
+        return getAbilityID();
     }
     public final String getAbilityBookID()
     {
-        return this.getClass().getSimpleName() + "_book";
+        return this.getClass().getSimpleName() + " Book";
     }
 
 
     public abstract ItemStack getAbilityItem(JavaPlugin plugin, Player player);
 
+    protected ItemStack getAbilityItem(JavaPlugin plugin, Player player, ArrayList<String> description, int customModelNum)
+    {
+        ItemStack skill = new ItemStack(getAbililityMaterial(), 1);
+
+        ItemMeta skill_meta = skill.getItemMeta();
+        skill_meta.setDisplayName(getSkillTitleColor() +""+ ChatColor.BOLD +""+ getAbilityID());
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
+        lore.addAll(description);
+        skill_meta.setLore(lore);
+        skill_meta.setCustomModelData(customModelNum);
+        skill.setItemMeta(skill_meta);
+
+        AvatarIDs.setItemStackAvatarID(plugin, skill, this.getAbilityID());
+        PlayerIDs.setItemStackPlayerID(plugin, skill, player);
+
+        return skill;
+    }
+
     public ItemStack getSkillBookItem(JavaPlugin plugin)
     {
         ItemStack skillBook = new ItemStack(Material.BOOK, 1);
         ItemMeta skill_meta = skillBook.getItemMeta();
-        String displayName = getBookColour() + "" + ChatColor.BOLD + getDisplayName();
+        String displayName = getBookColour() + "" + ChatColor.BOLD + getAbilityID();
         skill_meta.setDisplayName(displayName);
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");

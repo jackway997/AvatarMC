@@ -7,10 +7,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.storage.ProgressionStorage;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 public class ProgressionManager {
 
     public enum BENDER_TYPE{air, water, earth, fire, avatar}

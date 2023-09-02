@@ -36,7 +36,7 @@ public final class AvatarMC extends JavaPlugin
         abilityStorage = new AbilityStorage(this, db);
         progressionStorage = new ProgressionStorage(this, db);
 
-        regionProtectionManager = new RegionProtectionManager();
+        regionProtectionManager = new RegionProtectionManager(this);
         progressionManager = new ProgressionManager(this, progressionStorage);
         abilityManager = new AbilityManager(this, abilityStorage, progressionManager, regionProtectionManager);
         skillMenuManager = new SkillMenu(this, abilityManager);

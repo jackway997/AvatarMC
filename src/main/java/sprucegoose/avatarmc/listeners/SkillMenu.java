@@ -41,7 +41,7 @@ public class SkillMenu implements Listener
         for (Ability ability : abilityManager.getPlayerAbilities(player))
         {
             ItemStack item = ability.getAbilityItem(plugin, player);
-            ItemMetaTag.setItemMetaTag(plugin, item, invKey, ability.getClass().getSimpleName());
+            ItemMetaTag.setItemMetaTag(plugin, item, invKey, ability.getAbilityID());
             inv.setItem(slot, item);
             slot++;
         }
@@ -84,7 +84,7 @@ public class SkillMenu implements Listener
 
     private void abilityClick(Ability ability, Player player, ItemStack item)
     {
-        if (ItemMetaTag.itemStackHasTag(plugin, item, invKey, ability.getClass().getSimpleName())
+        if (ItemMetaTag.itemStackHasTag(plugin, item, invKey, ability.getAbilityID())
             && !player.getInventory().containsAtLeast(ability.getAbilityItem(plugin, player), 1)
             && !player.getItemOnCursor().equals(ability.getAbilityItem(plugin, player)))
         {
