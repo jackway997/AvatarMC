@@ -1,6 +1,7 @@
 package sprucegoose.avatarmc.utils;
 
 import org.bukkit.block.Block;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,10 +22,22 @@ public class BlockUtil {
         return time;
     }
 
+    public static String setTimeStampedBlockMeta(JavaPlugin plugin, String key, FallingBlock block)
+    {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(timeFormat);
+        LocalDateTime now = LocalDateTime.now();
+        String time = dtf.format(now);
+
+        block.setMetadata(key, new FixedMetadataValue(plugin, time));
+
+        return time;
+    }
+
     public static void removeTimeStampedBlockMeta(JavaPlugin plugin, String key, Block block)
     {
         block.removeMetadata(key, plugin);
     }
+
 
     public static boolean blockHasMetaAtTime(Block block, String key, String time)
     {
@@ -37,6 +50,16 @@ public class BlockUtil {
         {
             return false;
         }
+    }
+
+    public static boolean blockHasMeta(Block block, String key)
+    {
+        return block.hasMetadata(key);
+    }
+
+    public static boolean blockHasMeta(FallingBlock block, String key)
+    {
+        return block.hasMetadata(key);
     }
 
 }

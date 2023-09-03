@@ -11,6 +11,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -36,8 +38,8 @@ public class FireTrail extends Ability implements Listener {
     private final Set<UUID> fireTrailEnabledPlayers = new HashSet<>();
     private final Set<UUID> fireTrailProtectionPlayers = new HashSet<>();
     private final int fireTrailDuration = 3 * 20; // 3 seconds in ticks (20 ticks per second)
-    private final int cleanupDelay = 5;
-    private static final String NOSPREAD_KEY = "nospread";
+    private final int cleanupDelay = 20;
+    private final String NOSPREAD_KEY = "nospread";
 
 
     public FireTrail(JavaPlugin plugin, RegionProtectionManager regProtMan)
@@ -90,6 +92,52 @@ public class FireTrail extends Ability implements Listener {
     }
 
     @EventHandler
+    public void onPlayerDamage(EntityDamageEvent event)
+    {
+        if (event.getEntity() instanceof Player)
+        {
+            Player player = (Player) event.getEntity();
+            UUID playerUUID = player.getUniqueId();
+            EntityDamageEvent.DamageCause cause = event.getCause();
+            if ((cause == EntityDamageEvent.DamageCause.FIRE || cause == EntityDamageEvent.DamageCause.FIRE_TICK)
+                    && fireTrailProtectionPlayers.contains(playerUUID)) {
+                event.setCancelled(true); // Prevent damage to players with fire trail enabled.
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent event)
+    {
+        if(BlockUtil.blockHasMeta(event.getBlock(),NOSPREAD_KEY))
+        {
+                event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockSpread(BlockSpreadEvent e) {
+        Location fireLoc = e.getSource().getLocation();
+        World w = fireLoc.getWorld();
+        if(BlockUtil.blockHasMeta(w.getBlockAt(fireLoc.subtract(0, 1, 0)), NOSPREAD_KEY)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityCombustEvent(EntityCombustEvent event){
+        Entity entity = event.getEntity();
+
+        if(entity instanceof Player){
+            Player player = (Player) entity;
+            if (fireTrailProtectionPlayers.contains(player.getUniqueId()))
+            {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
@@ -97,14 +145,14 @@ public class FireTrail extends Ability implements Listener {
         if (fireTrailEnabledPlayers.contains(playerUUID)) {
             Vector direction = player.getLocation().getDirection().normalize().multiply(-1);
             Location blockBehind = player.getLocation().add(direction);
-            Location blockBehindBelow = blockBehind.add(0,-1,0);
+            Location blockBehindBelow = blockBehind.clone().add(0,-1,0);
 
             if (isPassableBlock(blockBehind.getBlock()))
             {
                 Block fireBlock = blockBehind.getBlock();
                 Block fireBlockBase = blockBehindBelow.getBlock();
                 fireBlock.setType(Material.FIRE);
-                //setNoSpread(fireBlockBase);
+                setNoSpread(fireBlockBase);
 
                 fireTrailBlocks.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(blockBehind); // Store fire block location
 
@@ -124,34 +172,6 @@ public class FireTrail extends Ability implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerDamage(EntityDamageEvent event)
-    {
-        if (event.getEntity() instanceof Player)
-        {
-            Player player = (Player) event.getEntity();
-            UUID playerUUID = player.getUniqueId();
-            EntityDamageEvent.DamageCause cause = event.getCause();
-            if ((cause == EntityDamageEvent.DamageCause.FIRE || cause == EntityDamageEvent.DamageCause.FIRE_TICK)
-                    && fireTrailProtectionPlayers.contains(playerUUID)) {
-                event.setCancelled(true); // Prevent damage to players with fire trail enabled.
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityCombustEvent(EntityCombustEvent event){
-        Entity entity = event.getEntity();
-
-        if(entity instanceof Player){
-            Player player = (Player) entity;
-            if (fireTrailProtectionPlayers.contains(player.getUniqueId()))
-            {
-                event.setCancelled(true);
-            }
-        }
-    }
-
     // Helper method to check if a block is passable for fire trail placement
     private boolean isPassableBlock(Block block) {
         Material blockType = block.getType();
@@ -163,15 +183,6 @@ public class FireTrail extends Ability implements Listener {
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.GRAY + "Blaze it bro");
         return getAbilityItem(plugin, player, lore, 1);
-    }
-
-    @EventHandler
-    public void onBlockSpread(BlockSpreadEvent e) {
-        Location fireLoc = e.getSource().getLocation();
-        World w = fireLoc.getWorld();
-        if(w.getBlockAt(fireLoc.subtract(0, 1, 0)).hasMetadata(NOSPREAD_KEY)) {
-            //e.setCancelled(true);
-        }
     }
 
     private void setNoSpread(Block block) {

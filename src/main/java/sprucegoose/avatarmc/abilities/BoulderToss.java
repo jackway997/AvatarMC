@@ -5,6 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -15,6 +17,7 @@ import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
+import sprucegoose.avatarmc.utils.BlockUtil;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
@@ -30,6 +33,7 @@ public class BoulderToss extends Ability
     private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private final Map<UUID, Integer> activeBends = new HashMap<>();
     private final int maxNumBends = 1;
+    private final String blockDataKey = "BoulderToss";
 
     private final List<Material> ALLOWED_BLOCK_TYPES = Arrays.asList(
             Material.GRASS_BLOCK, Material.DIRT, Material.STONE, Material.COBBLESTONE,
@@ -67,7 +71,7 @@ public class BoulderToss extends Ability
                 return;
             }
 
-            if (clickedBlock.hasMetadata("isClone")) // If this is a cloned block
+            if (BlockUtil.blockHasMeta(clickedBlock, blockDataKey)) // If this is a cloned block
             {
                 launchBlock(player, clickedBlock);
             }
@@ -80,7 +84,8 @@ public class BoulderToss extends Ability
                     {
                         // Check if the target block location is air
                         Block destinationBlock = clickedBlock.getLocation().add(0, 2, 0).getBlock();
-                        if (destinationBlock.getType() == Material.AIR && !destinationBlock.hasMetadata("isClone")) {
+                        if (destinationBlock.getType() == Material.AIR && !BlockUtil.blockHasMeta(destinationBlock, blockDataKey))
+                        {
                             // Clone the block
                             cloneBlock(player, clickedBlock);
                             addCooldown(player, item);
@@ -105,27 +110,49 @@ public class BoulderToss extends Ability
         }
     }
 
-    private void cloneBlock(Player player, Block clickedBlock) {
+    @EventHandler
+    private void onEntityChangeBlockEvent(EntityChangeBlockEvent event)
+    {
+        if (event.getEntityType() == EntityType.FALLING_BLOCK &&
+                !BlockUtil.blockHasMeta(event.getBlock(),blockDataKey) &&
+                BlockUtil.blockHasMeta((FallingBlock)event.getEntity(), blockDataKey))
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreakEvent(BlockBreakEvent event)
+    {
+        if (BlockUtil.blockHasMeta(event.getBlock(), blockDataKey))
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    private void cloneBlock(Player player, Block clickedBlock)
+    {
         Block destinationBlock = clickedBlock.getLocation().add(0, 2, 0).getBlock();
         UUID uuid = player.getUniqueId();
         //plugin.getLogger().info("Cloning block: " + clickedBlock.getType() + " at location: " + destinationBlock.getLocation());
         destinationBlock.setType(clickedBlock.getType());
-        destinationBlock.setMetadata("isClone", new FixedMetadataValue(plugin, true));
+        String bendTime = BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, destinationBlock);
 
-        scheduleCloneBlockRemoval(player, destinationBlock);
+        // Schedule removal of the cloned block
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if(BlockUtil.blockHasMetaAtTime(destinationBlock, blockDataKey, bendTime))
+            {
+                removeCloneBlock(player, destinationBlock);
+            }
+        }, 40L); // 2 seconds delay
+
         activeBends.put(uuid,activeBends.get(uuid)+1);
         //System.out.println("count increased to " + activeBends.get(uuid));
     }
 
     private void launchBlock(Player player, Block block)
     {
-        //plugin.getLogger().info("Launching block.");
-
-        Location blockLocation = block.getLocation();
-
         explosionOccurred.put(player.getUniqueId(), false);
-
-        //plugin.getLogger().info("Launching block: " + block.getType() + " at location: " + blockLocation);
 
         // Calculate direction
         double pitch = Math.toRadians(player.getLocation().getPitch());
@@ -136,7 +163,9 @@ public class BoulderToss extends Ability
         Vector direction = new Vector(x, y, z).normalize();
         direction.multiply(2);
         FallingBlock fallingBlock = block.getWorld().spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5), block.getBlockData());
+        BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, fallingBlock);
         removeCloneBlock(player, block);
+        BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, fallingBlock);
         fallingBlock.setDropItem(false); // Set the drop item property to false to prevent it from dropping items
         fallingBlock.setVelocity(direction);
 
@@ -146,17 +175,11 @@ public class BoulderToss extends Ability
     public void removeCloneBlock(Player player, Block block) {
         UUID uuid = player.getUniqueId();
 
-        if (block != null && block.hasMetadata("isClone"))
+        if (block != null && BlockUtil.blockHasMeta(block, blockDataKey))
         {
-            block.removeMetadata("isClone", plugin);
+            BlockUtil.removeTimeStampedBlockMeta(plugin, blockDataKey, block);
             block.setType(Material.AIR);
             activeBends.put(uuid,activeBends.get(uuid)-1);
-            //System.out.println("count decreased to " + activeBends.get(uuid));
-            //plugin.getLogger().info("Removed cloned block.");
-        }
-        else
-        {
-            //plugin.getLogger().info("Unable to remove block: " + block);
         }
     }
 
@@ -190,7 +213,7 @@ public class BoulderToss extends Ability
 
     private void performCleanup(FallingBlock fallingBlock, Location blockLocation, Player player) {
         fallingBlock.remove();
-        blockLocation.getBlock().setType(Material.AIR);
+        //blockLocation.getBlock().setType(Material.AIR);
         explosionOccurred.put(player.getUniqueId(), true);
     }
 
@@ -219,16 +242,8 @@ public class BoulderToss extends Ability
         explosionOccurred.put(player.getUniqueId(), true);
     }
 
-
     public boolean isAllowedBlockType(Material material) {
         return ALLOWED_BLOCK_TYPES.contains(material);
-    }
-
-    private void scheduleCloneBlockRemoval(Player player, Block clonedBlock) {
-
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                removeCloneBlock(player, clonedBlock);
-        }, 40L); // 2 seconds delay
     }
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
@@ -237,5 +252,4 @@ public class BoulderToss extends Ability
         lore.add(ChatColor.GRAY + "Boulder go brrrrrrr");
         return getAbilityItem(plugin, player, lore, 2);
     }
-
 }
