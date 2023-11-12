@@ -48,8 +48,8 @@
             <artifactId>maven-jar-plugin</artifactId>
             <version>2.3.1</version>
             <configuration>
-                <outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Minecraft Coding\Spigot Test Server\plugins</outputDirectory>
-                <!--<outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory>-->
+                <!--outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Minecraft Coding\Spigot Test Server\plugins</outputDirectory-->
+               <outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory>
             </configuration>
         </plugin>
     </plugins>
@@ -106,7 +106,6 @@
           <groupId>com.github.SaberLLC</groupId>
           <artifactId>Saber-Factions</artifactId>
           <version>1.6.x-SNAPSHOT</version>
-          <scope>provided</scope>
       </dependency>
       <!-- WorldEdit / WorldGuard -->
       <dependency>

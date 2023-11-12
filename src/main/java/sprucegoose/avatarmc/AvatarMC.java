@@ -3,7 +3,6 @@ package sprucegoose.avatarmc;
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.abilities.*;
 import sprucegoose.avatarmc.commands.*;
-import sprucegoose.avatarmc.listeners.CraftBlocks;
 import sprucegoose.avatarmc.listeners.SkillMenu;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.MySQL;
