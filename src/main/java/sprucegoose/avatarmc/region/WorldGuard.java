@@ -42,7 +42,7 @@ class WorldGuard extends RegionProtectionBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockFromTo(BlockFromToEvent event) {
-        System.out.println("Flow");
+        //System.out.println("Flow");
         Block block = event.getToBlock();
         org.bukkit.Location loc = block.getLocation();
 

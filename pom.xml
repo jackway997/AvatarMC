@@ -102,11 +102,11 @@
           <scope>compile</scope>
       </dependency>
       <!-- SaberFactions -->
-      <dependency>
+      <!--dependency>
           <groupId>com.github.SaberLLC</groupId>
           <artifactId>Saber-Factions</artifactId>
           <version>1.6.x-SNAPSHOT</version>
-      </dependency>
+      </dependency-->
       <!-- WorldEdit / WorldGuard -->
       <dependency>
           <groupId>com.sk89q.worldguard</groupId>

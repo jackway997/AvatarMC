@@ -29,11 +29,11 @@ public class RegionProtectionManager
             System.out.println("World Guard Registered!!!!");
             getServer().getPluginManager().registerEvents(wg, plugin);
         }
-        if (enabled("Factions"))
-        {
-            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
-                    new SaberFactions());
-        }
+//        if (enabled("Factions"))
+//        {
+//            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
+//                    new SaberFactions());
+//        }
     }
 
     private Map<JavaPlugin, RegionProtectionBase> PROTECTIONS = new LinkedHashMap<>(); //LinkedHashMap keeps the hashmap order of insertion
