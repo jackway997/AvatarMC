@@ -182,6 +182,7 @@ public class AbilityManager implements Listener
 
     private void readSkillBook(Player player, ItemStack item, Inventory inventory)
     {
+        System.out.println("skill book read");
         for (Ability ability : abilities) //check which skill book is read
         {
             if (ItemMetaTag.itemStackHasTag(plugin, item, Ability.getSkillBookKey(), ability.getAbilityBookID()))
