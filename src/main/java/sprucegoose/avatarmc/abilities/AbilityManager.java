@@ -52,6 +52,8 @@ public class AbilityManager implements Listener
         registerAbility(new FeatherFlight(plugin, regProtManager));
         registerAbility(new FireTrail(plugin, regProtManager));
         registerAbility(new Firebolt(plugin, regProtManager));
+        registerAbility(new ShockWave(plugin, regProtManager));
+
     }
 
     private void registerAbility(Ability ability)
