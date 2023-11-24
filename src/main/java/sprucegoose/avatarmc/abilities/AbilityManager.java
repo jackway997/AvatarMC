@@ -53,6 +53,7 @@ public class AbilityManager implements Listener
         registerAbility(new FireTrail(plugin, regProtManager));
         registerAbility(new Firebolt(plugin, regProtManager));
         registerAbility(new ShockWave(plugin, regProtManager));
+        registerAbility(new Fireball(plugin, regProtManager));
 
     }
 
