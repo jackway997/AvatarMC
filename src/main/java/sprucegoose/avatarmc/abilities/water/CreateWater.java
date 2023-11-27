@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.water;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.*;
 import java.util.ArrayList;

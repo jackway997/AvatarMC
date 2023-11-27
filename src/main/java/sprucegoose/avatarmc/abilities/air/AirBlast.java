@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.air;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;

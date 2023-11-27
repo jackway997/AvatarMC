@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.fire;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.PlayerIDs;
@@ -26,7 +27,6 @@ import java.util.*;
 
 public class Fireball extends Ability
 {
-    private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private Map<UUID, BukkitRunnable> activeBends = new HashMap<>();
 
     public Fireball(JavaPlugin plugin, RegionProtectionManager regProtManager)

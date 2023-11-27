@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.water;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -12,22 +12,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
-import sprucegoose.avatarmc.utils.AvatarIDs;
-import sprucegoose.avatarmc.utils.ImageParticles;
-import sprucegoose.avatarmc.utils.PlayerIDs;
-
+import sprucegoose.avatarmc.utils.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class AirTribute extends Ability implements Listener
+public class WaterTribute extends Ability implements Listener
 {
 
-    public AirTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
+    public WaterTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
-        super(plugin, regProtMan, ELEMENT_TYPE.air, ABILITY_LEVEL.beginner);
+        super(plugin, regProtMan, ELEMENT_TYPE.water, ABILITY_LEVEL.beginner);
         setCooldown(5000);
     }
 
@@ -66,7 +64,7 @@ public class AirTribute extends Ability implements Listener
             BukkitScheduler scheduler = Bukkit.getScheduler();
             BukkitTask task = scheduler.runTaskTimer(plugin, () ->
             {
-                ImageParticles.renderUprightImage(plugin, location, "graphics/air_symbol.png");
+                ImageParticles.renderUprightImage(plugin, location, "graphics/water_symbol.png");
 
             }, 0, 2L);
             activeAbilities.put(uuid, task);
@@ -86,7 +84,6 @@ public class AirTribute extends Ability implements Listener
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.GRAY + "Proudly display the");
         lore.add(ChatColor.GRAY + "symbol of your people");
-
         return getAbilityItem(plugin, player, lore, 1);
     }
 }
