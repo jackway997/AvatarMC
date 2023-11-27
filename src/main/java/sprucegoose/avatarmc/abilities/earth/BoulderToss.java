@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.earth;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -15,6 +15,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.BlockUtil;

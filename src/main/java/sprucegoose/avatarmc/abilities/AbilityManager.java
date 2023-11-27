@@ -13,6 +13,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import sprucegoose.avatarmc.abilities.air.*;
+import sprucegoose.avatarmc.abilities.earth.*;
+import sprucegoose.avatarmc.abilities.fire.*;
+import sprucegoose.avatarmc.abilities.water.*;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.AbilityStorage;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
@@ -54,6 +58,8 @@ public class AbilityManager implements Listener
         registerAbility(new Firebolt(plugin, regProtManager));
         registerAbility(new ShockWave(plugin, regProtManager));
         registerAbility(new Fireball(plugin, regProtManager));
+        registerAbility(new EarthPrison(plugin, regProtManager));
+        registerAbility(new MeteorStrike(plugin, regProtManager));
 
     }
 

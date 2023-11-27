@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.air;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ImageParticles;
@@ -22,12 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class FireTribute extends Ability implements Listener
+public class AirTribute extends Ability implements Listener
 {
 
-    public FireTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
+    public AirTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
-        super(plugin, regProtMan, ELEMENT_TYPE.fire, ABILITY_LEVEL.beginner);
+        super(plugin, regProtMan, ELEMENT_TYPE.air, ABILITY_LEVEL.beginner);
         setCooldown(5000);
     }
 
@@ -41,7 +42,7 @@ public class FireTribute extends Ability implements Listener
         Player player = e.getPlayer();
 
         if (    slot != null && item != null &&
-                (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)|| e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
+                (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
                 AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
@@ -66,7 +67,7 @@ public class FireTribute extends Ability implements Listener
             BukkitScheduler scheduler = Bukkit.getScheduler();
             BukkitTask task = scheduler.runTaskTimer(plugin, () ->
             {
-                ImageParticles.renderUprightImage(plugin, location, "graphics/fire_symbol.png");
+                ImageParticles.renderUprightImage(plugin, location, "graphics/air_symbol.png");
 
             }, 0, 2L);
             activeAbilities.put(uuid, task);
@@ -86,6 +87,7 @@ public class FireTribute extends Ability implements Listener
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.GRAY + "Proudly display the");
         lore.add(ChatColor.GRAY + "symbol of your people");
+
         return getAbilityItem(plugin, player, lore, 1);
     }
 }

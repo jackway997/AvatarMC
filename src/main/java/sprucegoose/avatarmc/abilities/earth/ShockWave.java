@@ -1,4 +1,4 @@
-package sprucegoose.avatarmc.abilities;
+package sprucegoose.avatarmc.abilities.earth;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.BlockUtil;
@@ -43,7 +44,7 @@ public class ShockWave extends Ability implements Listener
     );
 
     private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
-    private final String blockDataKey = "Shockwave";
+    private final String blockDataKey = "ShockWave";
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e)
