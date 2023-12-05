@@ -1,23 +1,22 @@
 package sprucegoose.avatarmc.abilities.fire;
 
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
-import sprucegoose.avatarmc.utils.ImageParticles;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
@@ -25,16 +24,19 @@ import java.util.*;
 public class MeteorStrike extends Ability implements Listener
 {
     // To do: add particle circle on the ground while charging
+    // cancel task and clear fallingSet on player leave game / die
 
     public enum CHARGE_STATE {stage1, stage2, stage3, stage4}
 
+
     public MeteorStrike(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
+
         super(plugin, regProtMan, ELEMENT_TYPE.fire, ABILITY_LEVEL.master);
         setCooldown(5000);
     }
 
-    private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
+    private Set<UUID> fallingSet = new HashSet<>();
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerToggleSneakEvent e)
@@ -61,7 +63,7 @@ public class MeteorStrike extends Ability implements Listener
                 @Override
                 public void run()
                 {
-                    if (player.isSneaking())
+                    if (player.isSneaking()) // and on ground
                     {
                         timer[0] += 1;
                         if (timer[0] >= stage3)
@@ -131,9 +133,71 @@ public class MeteorStrike extends Ability implements Listener
 
     private void launchMeteor(Player player, CHARGE_STATE state)
     {
+        System.out.println("launching");
+        Vector direction = new Vector(0,1,0).normalize();
+        player.setVelocity(direction.multiply(4));
+        fallingSet.add(player.getUniqueId());
 
+        // start meteor tracking task
+        BukkitRunnable meteorTask = new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                Vector velocity = player.getVelocity();
+
+                if (velocity.getY() < 0 ) // when player is falling
+                {
+
+                    // boost players X and Z speed based on look direction
+                    Location lookDirection = player.getEyeLocation().clone();
+                    if (lookDirection.getPitch() <= -10) // prevent player from flying up
+                    {
+                            lookDirection.setPitch(-10);
+                    }
+                    Vector vectorDirection = lookDirection.getDirection().normalize().multiply(2);
+                    vectorDirection.setY(velocity.getY());
+                    player.setVelocity(vectorDirection);
+
+                    // spawn particles
+                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation(), 1, 0, 0, 0, 0);
+                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().clone().add(1,0,0), 1, 0, 0, 0, 0);
+                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().clone().add(-1,0,0), 1, 0, 0, 0, 0);
+                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().clone().add(0,0,1), 1, 0, 0, 0, 0);
+                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().clone().add(0,0,-1), 1, 0, 0, 0, 0);
+                }
+                if (!(player.getLocation().getBlock().getRelative(BlockFace.DOWN, 2).isEmpty()
+                    && player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1).isEmpty()))
+                {
+                    System.out.println("Cancelling");
+                    this.cancel();
+                    Location location = player.getLocation();
+                    location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location,
+                            1, 0, 0, 0, 0);
+
+                    // get all entities in blast radius
+                    double blastRadius = 5;
+                    Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, blastRadius, blastRadius, blastRadius);
+                    entitiesHit.remove(player);
+                    if (!entitiesHit.isEmpty())
+                    {
+                        for (Entity entity : entitiesHit)
+                        {
+                            if (entity instanceof LivingEntity)
+                            {
+                                LivingEntity livingEntity = (LivingEntity)entity;
+
+                                // do something to each entity
+                                livingEntity.setFireTicks(3 * 20);
+                                livingEntity.damage(15, player);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        meteorTask.runTaskTimer(plugin, 20L, 1L);
     }
-
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {
@@ -141,5 +205,15 @@ public class MeteorStrike extends Ability implements Listener
         lore.add(ChatColor.GRAY + "I came in like a ");
         lore.add(ChatColor.GRAY + "wrecking ball.");
         return getAbilityItem(plugin, player, lore, 1);
+    }
+
+    @EventHandler
+    public void onPlayerFall(EntityDamageEvent e) {
+        Player player = (Player) e.getEntity();
+        if (fallingSet.contains(player.getUniqueId()) && e.getCause() == EntityDamageEvent.DamageCause.FALL)
+        {
+            fallingSet.remove(player.getUniqueId());
+            e.setCancelled(true);
+        }
     }
 }
