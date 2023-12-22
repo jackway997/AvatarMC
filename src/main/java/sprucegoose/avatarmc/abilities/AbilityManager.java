@@ -33,14 +33,21 @@ public class AbilityManager implements Listener
     private final HashMap<String, Ability> abilityMatrix = new HashMap<>();
     private final ProgressionManager progressionManager;
     private final RegionProtectionManager regProtManager;
+    private final WaterEffects waterEffects;
+    //private final EarthAbilityManager earthAbilityManager;
+    //private final FireAbilityManager fireAbilityManager;
+    //private final AirAbilityManager airAbilityManager;
+
 
     public AbilityManager(JavaPlugin plugin, AbilityStorage abilityStorage, ProgressionManager progressionManager,
-                          RegionProtectionManager regProtManager)
+                          RegionProtectionManager regProtManager, WaterEffects waterEffects)
     {
         this.plugin = plugin;
         this.abilityStorage = abilityStorage;
         this.progressionManager = progressionManager;
         this.regProtManager = regProtManager;
+        this.waterEffects = waterEffects;
+
         registerAbilities();
     }
 
@@ -60,6 +67,10 @@ public class AbilityManager implements Listener
         registerAbility(new Fireball(plugin, regProtManager));
         registerAbility(new EarthPrison(plugin, regProtManager));
         registerAbility(new MeteorStrike(plugin, regProtManager));
+        registerAbility(new BreathOfIce(plugin, regProtManager, waterEffects));
+        registerAbility(new IceBlade(plugin, regProtManager, waterEffects));
+        registerAbility(new FlowAsWater(plugin, regProtManager, waterEffects));
+        registerAbility(new Stasis(plugin, regProtManager));
 
     }
 
@@ -170,6 +181,7 @@ public class AbilityManager implements Listener
             readSkillBook(player, item, inventory);
         }
     }
+
     @EventHandler
     public void useSkillBookHandListener(PlayerInteractEvent e)
     {
