@@ -209,8 +209,9 @@ public class MeteorStrike extends Ability implements Listener
 
     @EventHandler
     public void onPlayerFall(EntityDamageEvent e) {
-        Player player = (Player) e.getEntity();
-        if (fallingSet.contains(player.getUniqueId()) && e.getCause() == EntityDamageEvent.DamageCause.FALL)
+        if (    e.getEntity() instanceof Player player &&
+                fallingSet.contains(player.getUniqueId()) &&
+                e.getCause() == EntityDamageEvent.DamageCause.FALL)
         {
             fallingSet.remove(player.getUniqueId());
             e.setCancelled(true);

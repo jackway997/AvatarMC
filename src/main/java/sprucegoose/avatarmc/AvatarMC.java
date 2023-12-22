@@ -2,6 +2,7 @@ package sprucegoose.avatarmc;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.abilities.*;
+import sprucegoose.avatarmc.abilities.water.WaterEffects;
 import sprucegoose.avatarmc.commands.*;
 import sprucegoose.avatarmc.listeners.SkillMenu;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
@@ -18,6 +19,7 @@ public final class AvatarMC extends JavaPlugin
     private ProgressionManager progressionManager;
     private SkillMenu skillMenuManager;
     private RegionProtectionManager regionProtectionManager;
+    private WaterEffects waterEffects;
     @Override
     public void onEnable()
     {
@@ -35,9 +37,11 @@ public final class AvatarMC extends JavaPlugin
         abilityStorage = new AbilityStorage(this, db);
         progressionStorage = new ProgressionStorage(this, db);
 
+        waterEffects = new WaterEffects(this);
         regionProtectionManager = new RegionProtectionManager(this);
         progressionManager = new ProgressionManager(this, progressionStorage);
-        abilityManager = new AbilityManager(this, abilityStorage, progressionManager, regionProtectionManager);
+        abilityManager = new AbilityManager(this, abilityStorage, progressionManager, regionProtectionManager,
+                waterEffects);
         skillMenuManager = new SkillMenu(this, abilityManager);
 
 
@@ -49,6 +53,7 @@ public final class AvatarMC extends JavaPlugin
         getCommand("give_ability").setExecutor(new GiveAbilityCommand(this, abilityManager));
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
+        getCommand("test3").setExecutor(new TestCommand3(this, waterEffects));
 
         // Register ability listeners
         for ( Ability ability : abilityManager.getAbilities())
@@ -58,6 +63,7 @@ public final class AvatarMC extends JavaPlugin
         // Register Misc listeners
         getServer().getPluginManager().registerEvents(new SkillMenu(this, abilityManager), this);
         getServer().getPluginManager().registerEvents(abilityManager, this);
+        getServer().getPluginManager().registerEvents(waterEffects, this);
     }
 
     @Override

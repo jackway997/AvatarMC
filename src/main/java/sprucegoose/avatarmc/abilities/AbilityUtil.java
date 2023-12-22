@@ -89,4 +89,21 @@ public class AbilityUtil
         }
     }
 
+    public Location getHUDLocation (Player player, double sideScale, double downScale)
+    {
+        //double sideScaleFactor = 0.55;
+        //double fireDownScaleFactor = 0.25;
+
+        Location newLoc = player.getEyeLocation();
+        Vector sideWayOffset = player.getLocation().getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(sideScale);
+        Vector fireDownOffset = player.getLocation().getDirection().crossProduct(sideWayOffset).normalize().multiply(downScale);
+
+        //Add offsets
+        newLoc.add(newLoc.getDirection().multiply(1));
+        newLoc.add(sideWayOffset);
+        newLoc.add(fireDownOffset);
+
+        return newLoc;
+    }
+
 }

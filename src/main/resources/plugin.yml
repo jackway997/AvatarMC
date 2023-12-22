@@ -22,3 +22,6 @@ commands:
   remove_bender:
     description: Removes bending from player
     usage: /<command> [player_name]
+  test3:
+    description: Test 3 Command for AvatarMC plugin.
+    usage: /<command>
