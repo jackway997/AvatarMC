@@ -119,7 +119,7 @@ public class Firebolt extends Ability
         }
         else // launch flame
         {
-            double maxRange = 24.0; // Adjust the maximum range as desired
+            double maxRange = 50.0; // Adjust the maximum range as desired
             double stepSize = 1;
             Location location = getFireLoc(player);
             Location originalLocation = location.clone();

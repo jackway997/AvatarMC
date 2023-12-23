@@ -102,9 +102,9 @@ public class FlowAsWater extends WaterAbility
                     for (int ii = 0 ; ii < particlesPerTick ; ii++)
                     {
                         double widthPos = rand.nextDouble(minWidth, maxWidth);
-                        double x = widthPos * Math.cos(theta);
+                        double x = widthPos * Math.cos(theta*Math.PI/180);
                         double y = rand.nextDouble(minHeight, maxHeight);
-                        double z = widthPos * Math.sin(theta);
+                        double z = widthPos * Math.sin(theta*Math.PI/180);
 
                         Location particleLoc = new Location(player.getWorld(),x+playerLoc.getX(), y+playerLoc.getY(), z+playerLoc.getZ());
                         Color color;
