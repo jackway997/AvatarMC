@@ -20,6 +20,7 @@ import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.BlockUtil;
+import sprucegoose.avatarmc.utils.EntityUtil;
 import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
@@ -28,6 +29,8 @@ public class ShockWave extends Ability implements Listener
 {
 
     // To do: check interaction between two shockwaves
+
+    private final String shockTimeKey = "ShockTimeKey";
 
     public ShockWave(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
@@ -68,16 +71,17 @@ public class ShockWave extends Ability implements Listener
 
     private void doAbility(JavaPlugin plugin, Player player)
     {
+        final double maxDistance = 16;
+        final double stepSize = 0.5;
+        final double shockRadius = 2.0;
+
         Vector directionVector = player.getEyeLocation().clone().getDirection();
         Vector newDirectionVector = new Vector(directionVector.getX(),0,directionVector.getZ()).normalize();
         Location loc = player.getLocation().clone();
         loc.add(directionVector.clone().multiply(2));
         Location originalLocation = loc.clone();
-        double maxDistance = 16;
-        double stepSize = 0.5;
-        Set<Integer> affectedEntities = new HashSet<>();
 
-        // Schedule Task to animate flame
+
         new BukkitRunnable()
         {
             @Override
@@ -86,46 +90,49 @@ public class ShockWave extends Ability implements Listener
                 double distance = originalLocation.distance(loc);
                 if (distance < maxDistance)
                 {
-                    if (BlockUtil.blockHasMeta(loc.getBlock(),blockDataKey) ||
-                        (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable()))
+                    if (!checkLocUpDown(loc))
                     {
-                        //System.out.println("block across valid");
-                    }
-                    else if (BlockUtil.blockHasMeta(loc.subtract(0,1,0).getBlock(),blockDataKey) ||
-                            (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable()))
-                    {
-                        //System.out.println("block down valid");
-                    }
-                    else if ((BlockUtil.blockHasMeta(loc.add(0,2,0).getBlock(),blockDataKey) ||
-                            (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable())))
-                    {
-                        //System.out.println("block up valid");
-                    }
-                    else
-                    {
-                        //System.out.println("End of Shock at distance = " + distance);
                         this.cancel();
                     }
 
                     Block shockBlock = loc.getBlock();
+
+
                     //System.out.println("can be shocked? "+ blockCanBeShocked(shockBlock));
                     if (blockCanBeShocked(shockBlock)) // && is not in protected region
                     {
-                        shockBlock(shockBlock);
+                        shockBlock(shockBlock, player);
                     }
-                    for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1, 2, 1))
+
+                    // shock other blocks along that axis if possible
+                    double theta = loc.getYaw();
+
+                    Location leftShockLoc = loc.clone();
+                    Vector leftStepVector = new Vector(1*stepSize*Math.cos(theta*Math.PI/180),0, 1*stepSize*Math.sin(theta*Math.PI/180));
+                    for (double ii = 0.0; ii < shockRadius; ii = ii + stepSize)
                     {
-                        if (!(entity instanceof Player && ((Player)entity).getUniqueId() == player.getUniqueId()))
+                        leftShockLoc.add(leftStepVector);
+                        checkLocUpDown(leftShockLoc);
+                        Block leftShockBlock = leftShockLoc.getBlock();
+
+                        if (blockCanBeShocked(leftShockBlock)) // && is not in protected region
                         {
-                            if (entity instanceof LivingEntity && !affectedEntities.contains(entity.getEntityId()))
-                            {
-                                LivingEntity livingEntity = (LivingEntity) entity;
-                                livingEntity.damage(8, player);
-                                livingEntity.setVelocity(new Vector(0,1,0).multiply(1));
-                                livingEntity.setNoDamageTicks(8);
-                                //System.out.println("damaging: "+ livingEntity.getEntityId());
-                                affectedEntities.add(livingEntity.getEntityId());
-                            }
+                            shockBlock(leftShockBlock, player);
+                        }
+                    }
+
+                    // right side
+                    Location rightShockLoc = loc.clone();
+                    Vector rightStepVector = new Vector(-1*stepSize*Math.cos(theta*Math.PI/180),0, -1*stepSize*Math.sin(theta*Math.PI/180));
+                    for (double ii = 0.0; ii < shockRadius; ii = ii + stepSize)
+                    {
+                        rightShockLoc.add(rightStepVector);
+                        checkLocUpDown(rightShockLoc);
+                        Block rightShockBlock = rightShockLoc.getBlock();
+
+                        if (blockCanBeShocked(rightShockBlock)) // && is not in protected region
+                        {
+                            shockBlock(rightShockBlock, player);
                         }
                     }
                         loc.add(newDirectionVector);
@@ -136,12 +143,37 @@ public class ShockWave extends Ability implements Listener
                 }
             }
         }.runTaskTimer(plugin, 0, 2L);
-
-
     }
 
-    private void shockBlock(Block block)
+    // returns whether a location is a valid place for a shock, and modifies the location of the block in place
+    private boolean checkLocUpDown(Location loc)
     {
+        if (BlockUtil.blockHasMeta(loc.getBlock(),blockDataKey) ||
+                (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable()))
+        {
+            return true;
+        }
+        else if (BlockUtil.blockHasMeta(loc.subtract(0,1,0).getBlock(),blockDataKey) ||
+                (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable()))
+        {
+            return true;
+        }
+        else if ((BlockUtil.blockHasMeta(loc.add(0,2,0).getBlock(),blockDataKey) ||
+                (!loc.getBlock().isEmpty() && loc.clone().add(0, 1, 0).getBlock().isPassable())))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void shockBlock(Block block, Player player)
+    {
+        // Constants
+        final double shockTimeCooldown = 2.0;
+
         Block destinationBlock = block.getLocation().clone().add(0, 1, 0).getBlock();
         destinationBlock.setType(block.getType());
         destinationBlock.getWorld().spawnParticle(Particle.BLOCK_DUST,
@@ -152,11 +184,27 @@ public class ShockWave extends Ability implements Listener
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if(BlockUtil.blockHasMetaAtTime(destinationBlock, blockDataKey, bendTime))
             {
-
                 unShockBlock(destinationBlock);
             }
         }, 10L); // 1 second delay
 
+        Location loc = block.getLocation();
+        for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1, 2, 1))
+        {
+            if (!(entity instanceof Player && entity.getUniqueId() == player.getUniqueId()))
+            {
+                if (entity instanceof LivingEntity livingEntity &&
+                        ((EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) > shockTimeCooldown) ||
+                        (EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) < 0)))
+                {
+                    livingEntity.damage(8, player);
+                    livingEntity.setVelocity(new Vector(0,1,0).multiply(1));
+                    livingEntity.setNoDamageTicks(8);
+                    System.out.println("damaging: "+ livingEntity.getEntityId());
+                    EntityUtil.setTimeStampedEntityMeta(plugin, shockTimeKey, livingEntity);
+                }
+            }
+        }
         //System.out.println("count increased to " + activeBends.get(uuid));
     }
 
