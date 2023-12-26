@@ -71,7 +71,7 @@ public class AbilityManager implements Listener
         registerAbility(new IceBlade(plugin, regProtManager, waterEffects));
         registerAbility(new FlowAsWater(plugin, regProtManager, waterEffects));
         registerAbility(new Stasis(plugin, regProtManager));
-
+        registerAbility(new Heal(plugin, regProtManager));
     }
 
     private void registerAbility(Ability ability)
