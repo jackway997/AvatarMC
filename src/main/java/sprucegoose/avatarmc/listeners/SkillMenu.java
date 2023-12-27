@@ -32,7 +32,8 @@ public class SkillMenu implements Listener
 
     public void openInventory(JavaPlugin plugin, Player player)
     {
-        int invSize = 9 * 1;
+        int numAbilities = (abilityManager.getPlayerAbilities(player).size() / 9) + 1;
+        int invSize = 9 * numAbilities;
         int slot = 0;
 
         Inventory inv = Bukkit.createInventory(player, invSize, skillMenuName);
@@ -55,7 +56,7 @@ public class SkillMenu implements Listener
             filler.setItemMeta(itemMeta);
         }
 
-        for (int ii = slot ; ii < 9; ii++)
+        for (int ii = slot ; ii < invSize; ii++)
             inv.setItem(ii, filler);
 
         player.openInventory(inv);

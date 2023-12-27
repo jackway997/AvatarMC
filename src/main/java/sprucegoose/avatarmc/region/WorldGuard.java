@@ -4,23 +4,18 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.domains.Association;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
-import sprucegoose.avatarmc.abilities.Ability;
+import org.jetbrains.annotations.NotNull;
 
 class WorldGuard extends RegionProtectionBase implements Listener {
 
@@ -29,15 +24,27 @@ class WorldGuard extends RegionProtectionBase implements Listener {
     }
 
     @Override
-    public boolean isRegionProtectedReal(Player player, org.bukkit.Location reallocation, Ability ability) {
+    public boolean isLocationBreakable(@NotNull Player player, @NotNull org.bukkit.Location reallocation) {
 
         final Location location = BukkitAdapter.adapt(reallocation);
         LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
 
         RegionContainer container = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionQuery query = container.createQuery();
+        StateFlag.State state = query.queryState(location, localPlayer, Flags.BUILD);
+        return state == StateFlag.State.ALLOW || state == null;
+    }
 
-        return !query.testState(location, localPlayer, Flags.BUILD);
+
+    public boolean isLocationPVPEnabled(@NotNull Player player, @NotNull org.bukkit.Location reallocation)
+    {
+    final Location location = BukkitAdapter.adapt(reallocation);
+    LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+
+    RegionContainer container = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer();
+    RegionQuery query = container.createQuery();
+    StateFlag.State state = query.queryState(location, localPlayer, Flags.PVP);
+        return state == StateFlag.State.ALLOW || state == null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

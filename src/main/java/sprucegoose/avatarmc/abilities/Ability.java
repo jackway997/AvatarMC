@@ -20,7 +20,6 @@ import java.util.UUID;
 
 public abstract class Ability implements Listener {
 
-
     public enum ELEMENT_TYPE {air, water, earth, fire}
     public enum ABILITY_LEVEL {beginner, adept, expert, master}
     public final HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();

@@ -27,15 +27,19 @@ public abstract class RegionProtectionBase {
         }
     }
 
-    public final boolean isRegionProtected(@NotNull Player player, @NotNull Location location, @Nullable Ability ability) {
+//    public final boolean isRegionProtected(@NotNull Player player, @NotNull Location location, @Nullable Ability ability) {
+//
+//            final boolean allowHarmless = false;
+//
+//            if (ability == null && allowHarmless) {
+//                return false;
+//            }
+//            return isRegionProtectedReal(player, location, ability);
+//    }
 
-            final boolean allowHarmless = false;
+    //protected abstract boolean isRegionProtected(@NotNull Player player, @NotNull Location location, Ability ability);
 
-            if (ability == null && allowHarmless) {
-                return false;
-            }
-            return isRegionProtectedReal(player, location, ability);
-    }
+    public abstract boolean isLocationBreakable(@NotNull Player player, @NotNull Location location);
 
-    public abstract boolean isRegionProtectedReal(Player player, Location location, Ability ability);
+    public abstract boolean isLocationPVPEnabled(@NotNull Player player, @NotNull Location location);
 }

@@ -12,15 +12,18 @@ import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.abilities.AbilityManager;
 import sprucegoose.avatarmc.abilities.water.WaterEffects;
+import sprucegoose.avatarmc.region.RegionProtectionManager;
+
+import javax.swing.plaf.synth.Region;
 
 public class TestCommand3 implements CommandExecutor
 {
     JavaPlugin plugin;
-    WaterEffects waterEffects;
-    public TestCommand3(JavaPlugin plugin, WaterEffects waterEffects)
+    RegionProtectionManager regionProtectionManager;
+    public TestCommand3(JavaPlugin plugin, RegionProtectionManager regionProtectionManager)
     {
         this.plugin = plugin;
-        this.waterEffects = waterEffects;
+        this.regionProtectionManager = regionProtectionManager;
     }
 
     @Override
@@ -28,28 +31,9 @@ public class TestCommand3 implements CommandExecutor
     {
         if (sender instanceof Player player)
         {
-//            BukkitRunnable windForceTask = new BukkitRunnable()
-//            {
-//                @Override
-//                public void run()
-//                {
-//                    player.setVelocity(player.getVelocity().add(new Vector(0.1, 0.1, 0)));
-//                }
-//            }; windForceTask.runTaskTimer(plugin, 0L, 1L);
-//
-//            BukkitRunnable cancelTask = new BukkitRunnable()
-//            {
-//                @Override
-//                public void run()
-//                {
-//                      windForceTask.cancel();
-//                }
-//            };
-//            cancelTask.runTaskLater(plugin, 5L*20L);
-
-
+            System.out.println("breakable: "+ regionProtectionManager.isLocationBreakable(player, player.getLocation()));
+            System.out.println("PVP: "+ regionProtectionManager.isLocationPVPEnabled(player, player.getLocation()));
         }
-
 
         return true;
     }

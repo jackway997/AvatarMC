@@ -72,13 +72,15 @@ public class Stasis extends Ability implements Listener
 
             if (!onCooldown(player))
             {
-                addCooldown(player, item);
-                doAbility(player);
+                if (doAbility(player))
+                {
+                    addCooldown(player, item);
+                }
             }
         }
     }
 
-    private void doAbility(Player player)
+    private boolean doAbility(Player player)
     {
         // Constants
         final double interactEventTimeWindow = 1; // determine what this number needs to be
@@ -86,6 +88,14 @@ public class Stasis extends Ability implements Listener
         final long abilityDuration = 5L * 20L;
 
         LivingEntity target = AbilityUtil.getHostileLOS(player, 10, 0.5);
+
+        // don't execute ability if either player is in a PVP disabled zone, or no target is found.
+        if (target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                (target instanceof Player targetPlayer &&
+                        !regProtManager.isLocationPVPEnabled(targetPlayer, targetPlayer.getLocation())))
+        {
+            return false;
+        }
 
         double distance = player.getEyeLocation().distance(target.getLocation());
         Location previousLoc = target.getLocation();
@@ -127,6 +137,18 @@ public class Stasis extends Ability implements Listener
                     stepLocation = previousLoc;
                 }
 
+                // if player or target is in a protected region, cancel the skill.
+                if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                        (target instanceof Player targetPlayer &&
+                                !regProtManager.isLocationPVPEnabled(targetPlayer, targetPlayer.getLocation())))
+                {
+                    if (!this.isCancelled())
+                    {
+                        this.cancel();
+                    }
+                    return;
+                }
+
                 target.teleport(stepLocation);
                 target.setVelocity(new Vector(0,0,0));
 
@@ -149,6 +171,7 @@ public class Stasis extends Ability implements Listener
             }
         };
         cancelTask.runTaskLater(plugin, abilityDuration);
+        return true;
     }
 
     private void animateCircle(Player player, double angle)

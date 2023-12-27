@@ -115,7 +115,7 @@ public class FlowAsWater extends WaterAbility
                         }
                         else
                         {
-                            color = Color.fromRGB(0,0,0); // TBC with colour picker
+                            color = Color.fromRGB(84,156,204); // TBC with colour picker
                         }
 
                         Particle.DustOptions options = new Particle.DustOptions(color, 1);

@@ -53,7 +53,7 @@ public final class AvatarMC extends JavaPlugin
         getCommand("give_ability").setExecutor(new GiveAbilityCommand(this, abilityManager));
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
-        getCommand("test3").setExecutor(new TestCommand3(this, waterEffects));
+        getCommand("test3").setExecutor(new TestCommand3(this, regionProtectionManager));
 
         // Register ability listeners
         for ( Ability ability : abilityManager.getAbilities())

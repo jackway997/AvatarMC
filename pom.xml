@@ -48,8 +48,8 @@
             <artifactId>maven-jar-plugin</artifactId>
             <version>2.3.1</version>
             <configuration>
-                <!--outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Minecraft Coding\Spigot Test Server\plugins</outputDirectory-->
-               <outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory>
+                <outputDirectory>C:\Users\Jack\OneDrive\Laptop Files\Laptop_Desktop\Minecraft Coding\Spigot Test Server\plugins</outputDirectory>
+               <!--outputDirectory>/Users/jackway/Desktop/Spigot/plugins</outputDirectory-->
             </configuration>
         </plugin>
     </plugins>
@@ -70,15 +70,15 @@
           <id>sonatype</id>
           <url>https://oss.sonatype.org/content/groups/public/</url>
       </repository>
-      <!-- GriefPrevention, Towny and SaberFactions Repo -->
-      <repository>
-          <id>jitpack.io</id>
-          <url>https://jitpack.io</url>
-      </repository>
       <!-- WorldGuard and WorldEdit Repo -->
       <repository>
           <id>sk89q-repo</id>
           <url>https://maven.enginehub.org/repo/</url>
+      </repository>
+      <!-- GriefPrevention, Towny and SaberFactions Repo -->
+      <repository>
+          <id>jitpack.io</id>
+          <url>https://jitpack.io</url>
       </repository>
   </repositories>
 
@@ -102,11 +102,11 @@
           <scope>compile</scope>
       </dependency>
       <!-- SaberFactions -->
-      <!--dependency>
+      <dependency>
           <groupId>com.github.SaberLLC</groupId>
           <artifactId>Saber-Factions</artifactId>
-          <version>1.6.x-SNAPSHOT</version>
-      </dependency-->
+          <version>4.1.3-Stable</version>
+      </dependency>
       <!-- WorldEdit / WorldGuard -->
       <dependency>
           <groupId>com.sk89q.worldguard</groupId>

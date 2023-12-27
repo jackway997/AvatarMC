@@ -2,18 +2,11 @@ package sprucegoose.avatarmc.region;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import sprucegoose.avatarmc.abilities.Ability;
-
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.bukkit.Bukkit.getServer;
 
@@ -29,11 +22,11 @@ public class RegionProtectionManager
             System.out.println("World Guard Registered!!!!");
             getServer().getPluginManager().registerEvents(wg, plugin);
         }
-//        if (enabled("Factions"))
-//        {
-//            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
-//                    new SaberFactions());
-//        }
+        if (enabled("Factions"))
+        {
+            registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
+                    new SaberFactions());
+        }
     }
 
     private Map<JavaPlugin, RegionProtectionBase> PROTECTIONS = new LinkedHashMap<>(); //LinkedHashMap keeps the hashmap order of insertion
@@ -50,23 +43,44 @@ public class RegionProtectionManager
         return PROTECTIONS;
     }
 
-    public boolean isRegionProtected(Player player, Location location, Ability ability) {
-        if (location != null && checkAll(player, location, ability)) return true;
-
-        return checkAll(player, player.getLocation(), ability);
+    public boolean isLocationBreakable(Player player, Location location) {
+        if (location != null && player != null);
+        {
+            return checkIsLocationBreakable(player, location);
+        }
     }
 
-    private boolean checkAll(Player player, Location location, Ability ability) {
+    public boolean isLocationPVPEnabled(Player player, Location location) {
+        if (location != null && player != null);
+        {
+            return checkIsLocationPVPEnabled(player, location);
+        }
+    }
+
+    private boolean checkIsLocationBreakable(Player player, Location location) {
         for (RegionProtectionBase protection : this.getActiveProtections().values()) {
             try {
-                if (protection.isRegionProtected(player, location, ability)) {
-                    return true;
+                if (!protection.isLocationBreakable(player, location)) {
+                    return false;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return false;
+        return true;
+    }
+
+    private boolean checkIsLocationPVPEnabled(Player player, Location location) {
+        for (RegionProtectionBase protection : this.getActiveProtections().values()) {
+            try {
+                if (!protection.isLocationPVPEnabled(player, location)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
     private static boolean enabled(String plugin) {
