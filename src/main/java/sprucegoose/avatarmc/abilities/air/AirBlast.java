@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.abilities.Ability;
+import sprucegoose.avatarmc.abilities.AbilityUtil;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
@@ -47,13 +48,14 @@ public class AirBlast extends Ability implements Listener
                 PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer()) && !onCooldown(player)
             )
         {
-            addCooldown(player, item);
-            airBlast(player);
+            if (airBlast(player)) {
+                addCooldown(player, item);
+            }
             e.setCancelled(true);
         }
     }
 
-    private static void airBlast(Player player)
+    private boolean airBlast(Player player)
     {
         double maxRange = 8.0; // Adjust the maximum range as desired
         double knockbackStrength = 3; // Adjust the knockback strength as needed
@@ -64,39 +66,30 @@ public class AirBlast extends Ability implements Listener
 
         double stepSize = 0.1;
         double distance = 0.0;
+
+        LivingEntity target = AbilityUtil.getHostileLOS(player,8, 0.5);
+
+        if (target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                        !regProtManager.isLocationPVPEnabled(player, target.getLocation()))
+        {
+            return false;
+        }
+
         player.getWorld().playSound(player.getLocation().add(direction), Sound.BLOCK_FIRE_EXTINGUISH, 10f, 0.7f);
         player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, player.getLocation().add(direction).add(0,1,0), 25);
 
-        while (distance < maxRange) {
-            Location stepLocation = location.clone().add(direction.clone().multiply(distance));
-            Block block = stepLocation.getBlock();
+        target.damage(damage); // Adjust the damage as needed
 
-            if (block.getType().isSolid()) {
-                break;
-            }
+        Location hitLocation = target.getLocation();
+        hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 25);
 
-            RayTraceResult result = player.getWorld().rayTraceEntities(location, direction, distance,
-                    e -> e instanceof LivingEntity && e != player);
-            if (result != null) {
-                Entity hitEntity = result.getHitEntity();
-                if (hitEntity instanceof LivingEntity) {
-                    LivingEntity livingEntity = (LivingEntity) hitEntity;
-                    livingEntity.damage(damage); // Adjust the damage as needed
+        Vector knockbackDirection = hitLocation.toVector().subtract(location.toVector()).normalize();
+        knockbackDirection.setY(0.15); // Adjust the vertical knockback as needed
+        target.setVelocity(knockbackDirection.multiply(knockbackStrength));
 
-                    Location hitLocation = livingEntity.getLocation();
-                    hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 25);
-
-                    //player.getWorld().playSound(hitLocation, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 0.7f);
-                    Vector knockbackDirection = hitLocation.toVector().subtract(location.toVector()).normalize();
-                    knockbackDirection.setY(0.15); // Adjust the vertical knockback as needed
-                    livingEntity.setVelocity(knockbackDirection.multiply(knockbackStrength));
-                    break;
-                }
-            }
-
-            distance += stepSize;
-        }
+        return true;
     }
+
     @Override
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)
     {

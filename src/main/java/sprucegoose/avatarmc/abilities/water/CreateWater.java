@@ -1,9 +1,6 @@
 package sprucegoose.avatarmc.abilities.water;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +16,8 @@ import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.*;
 import java.util.ArrayList;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.EventPriority;
 
 public class CreateWater extends Ability implements Listener
 {
@@ -45,28 +44,38 @@ public class CreateWater extends Ability implements Listener
                 AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) /*&&
                 !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)*/
-            )
-        {
-            addCooldown(player, item);
-            createWater(plugin, targetBlockLocation);
+            ) {
+            if (createWater(plugin, player, targetBlockLocation))
+            {
+                addCooldown(player, item);
+            }
             e.setCancelled(true);
         }
     }
 
-    private static void createWater(JavaPlugin plugin, Block targetBlockLocation)
+    private boolean createWater(JavaPlugin plugin, Player player, Block targetBlockLocation)
     {
-        targetBlockLocation.setType(Material.WATER);
-        targetBlockLocation.getWorld().playSound(targetBlockLocation.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 0.5f, 1.0f);
-
-        // With BukkitScheduler
-        BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskLater(plugin, () ->
+        if (regProtManager.isLocationBreakable(player, targetBlockLocation.getLocation()))
         {
-            if (targetBlockLocation.getType().equals(Material.WATER))
+            targetBlockLocation.setType(Material.WATER);
+            targetBlockLocation.getWorld().playSound(targetBlockLocation.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 0.5f, 1.0f);
+
+            // With BukkitScheduler
+            BukkitScheduler scheduler = Bukkit.getScheduler();
+            scheduler.runTaskLater(plugin, () ->
             {
-                targetBlockLocation.setType(Material.AIR);
-            }
-        }, 20L * 1L);
+                if (targetBlockLocation.getType().equals(Material.WATER))
+                {
+                    targetBlockLocation.setType(Material.AIR);
+                }
+            }, 20L * 1L);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)

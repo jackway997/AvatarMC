@@ -25,6 +25,8 @@ import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
 
+// bug fix needed - cancel the cancel task for the hand flame animation
+
 public class Fireball extends Ability
 {
     private Map<UUID, BukkitRunnable> activeBends = new HashMap<>();
@@ -58,8 +60,11 @@ public class Fireball extends Ability
             }
             else if (!onCooldown(player))
             {
-                addCooldown(player, item);
-                summonHandFlame(plugin, player);
+                if (summonHandFlame(plugin, player))
+                {
+                    addCooldown(player, item);
+                }
+
             }
         }
     }
@@ -89,9 +94,14 @@ public class Fireball extends Ability
         return fireLoc;
     }
 
-    private void summonHandFlame(JavaPlugin plugin, Player player)
+    private boolean summonHandFlame(JavaPlugin plugin, Player player)
     {
         UUID playerUUID = player.getUniqueId();
+
+        if ( !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        {
+            return false;
+        }
 
         // Schedule Task to animate flame
         BukkitRunnable handFlame = new BukkitRunnable()
@@ -121,6 +131,7 @@ public class Fireball extends Ability
             }
         };
         cancelTask.runTaskLater(plugin,5L * 20L);
+        return true;
     }
 
     private void launchFireball(JavaPlugin plugin, Player player)
@@ -143,6 +154,11 @@ public class Fireball extends Ability
                 handFlame.cancel();
             }
             activeBends.remove(playerUUID);
+        }
+
+        if ( !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        {
+            return;
         }
 
         // Animate Directional Flame
@@ -201,11 +217,14 @@ public class Fireball extends Ability
             {
                 if (entity instanceof LivingEntity)
                 {
-                    LivingEntity livingEntity = (LivingEntity)entity;
+                    if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                    {
+                        LivingEntity livingEntity = (LivingEntity) entity;
 
-                    // do something to each entity
-                    livingEntity.setFireTicks(3 * 20);
-                    livingEntity.damage(12, player);
+                        // do something to each entity
+                        livingEntity.setFireTicks(3 * 20);
+                        livingEntity.damage(12, player);
+                    }
                 }
             }
         }

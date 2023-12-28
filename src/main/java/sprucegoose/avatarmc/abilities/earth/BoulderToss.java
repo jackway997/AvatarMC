@@ -78,36 +78,56 @@ public class BoulderToss extends Ability
             }
             else // Player is trying to bend a new block
             {
-                activeBends.putIfAbsent(playerUUID, 0);
-                if ((activeBends.get(playerUUID) < maxNumBends) && !onCooldown(player)) // If a cloned block doesn't exist for player
+                if (!onCooldown(player)) {
+                    if (createNewBoulder(player, clickedBlock))
+                    {
+                        addCooldown(player, item);
+                    }
+                }
+            }
+            e.setCancelled(true);
+        }
+    }
+
+    private boolean createNewBoulder(Player player, Block block)
+    {
+        UUID playerUUID = player.getUniqueId();
+
+        if (    !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                !regProtManager.isLocationPVPEnabled(player, block.getLocation()))
+        {
+            return false;
+        }
+
+        activeBends.putIfAbsent(playerUUID, 0);
+        if ((activeBends.get(playerUUID) < maxNumBends) && !onCooldown(player)) // If a cloned block doesn't exist for player
+        {
+            if (isAllowedBlockType(block.getType())) // if block is of allowed type
+            {
+                // Check if the target block location is air
+                Block destinationBlock = block.getLocation().add(0, 2, 0).getBlock();
+                if (destinationBlock.getType() == Material.AIR && !BlockUtil.blockHasMeta(destinationBlock, blockDataKey))
                 {
-                    if (isAllowedBlockType(clickedBlock.getType())) // if block is of allowed type
-                    {
-                        // Check if the target block location is air
-                        Block destinationBlock = clickedBlock.getLocation().add(0, 2, 0).getBlock();
-                        if (destinationBlock.getType() == Material.AIR && !BlockUtil.blockHasMeta(destinationBlock, blockDataKey))
-                        {
-                            // Clone the block
-                            cloneBlock(player, clickedBlock);
-                            addCooldown(player, item);
-                        }
-                        else
-                        {
-                            //player.sendMessage(ChatColor.RED + "There is no room to bend!");
-                        }
-                    }
-                    else
-                    {
-                        //player.sendMessage(ChatColor.RED + "You are unable to bend with " + clickedBlock.getType() + "!");
-                    }
+                    // Clone the block
+                    cloneBlock(player, block);
+                    return true;
                 }
                 else
                 {
-                    //player.sendMessage(ChatColor.BLUE + "You can only clone one block at a time!");
+                    //player.sendMessage(ChatColor.RED + "There is no room to bend!");
+                    return false;
                 }
-
             }
-            e.setCancelled(true);
+            else
+            {
+                //player.sendMessage(ChatColor.RED + "You are unable to bend with " + clickedBlock.getType() + "!");
+                return false;
+            }
+        }
+        else
+        {
+            //player.sendMessage(ChatColor.BLUE + "You can only clone one block at a time!");
+            return false;
         }
     }
 
@@ -235,8 +255,11 @@ public class BoulderToss extends Ability
 
         for (Entity entity : nearbyEntities) {
             if (entity instanceof LivingEntity) {
-                // Apply the fixed damage to the entity
-                ((LivingEntity) entity).damage(fixedDamage);
+                if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                {
+                    // Apply the fixed damage to the entity
+                    ((LivingEntity) entity).damage(fixedDamage);
+                }
 
             }
         }

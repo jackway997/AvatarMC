@@ -69,11 +69,17 @@ public class ShockWave extends Ability implements Listener
         }
     }
 
-    private void doAbility(JavaPlugin plugin, Player player)
+    private boolean doAbility(JavaPlugin plugin, Player player)
     {
         final double maxDistance = 16;
         final double stepSize = 0.5;
         final double shockRadius = 2.0;
+
+        // don't execute ability if player is in a PVP disabled zone
+        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        {
+            return false;
+        }
 
         Vector directionVector = player.getEyeLocation().clone().getDirection();
         Vector newDirectionVector = new Vector(directionVector.getX(),0,directionVector.getZ()).normalize();
@@ -93,20 +99,31 @@ public class ShockWave extends Ability implements Listener
                     if (!checkLocUpDown(loc))
                     {
                         this.cancel();
+                        return;
                     }
 
                     Block shockBlock = loc.getBlock();
 
-
-                    //System.out.println("can be shocked? "+ blockCanBeShocked(shockBlock));
                     if (blockCanBeShocked(shockBlock)) // && is not in protected region
                     {
-                        shockBlock(shockBlock, player);
+                        if (regProtManager.isLocationPVPEnabled(player, shockBlock.getLocation()))
+                        {
+                            shockBlock(shockBlock, player);
+                        }
+                        else // cancel skill execution
+                        {
+                            if (!this.isCancelled())
+                            {
+                                this.cancel();
+                                return;
+                            }
+                        }
                     }
 
                     // shock other blocks along that axis if possible
                     double theta = loc.getYaw();
 
+                    // left side
                     Location leftShockLoc = loc.clone();
                     Vector leftStepVector = new Vector(1*stepSize*Math.cos(theta*Math.PI/180),0, 1*stepSize*Math.sin(theta*Math.PI/180));
                     for (double ii = 0.0; ii < shockRadius; ii = ii + stepSize)
@@ -115,9 +132,21 @@ public class ShockWave extends Ability implements Listener
                         checkLocUpDown(leftShockLoc);
                         Block leftShockBlock = leftShockLoc.getBlock();
 
+
                         if (blockCanBeShocked(leftShockBlock)) // && is not in protected region
                         {
-                            shockBlock(leftShockBlock, player);
+                            if (regProtManager.isLocationPVPEnabled(player, leftShockBlock.getLocation()))
+                            {
+                                shockBlock(leftShockBlock, player);
+                            }
+                            else // cancel skill execution
+                            {
+                                if (!this.isCancelled())
+                                {
+                                    this.cancel();
+                                    return;
+                                }
+                            }
                         }
                     }
 
@@ -132,17 +161,34 @@ public class ShockWave extends Ability implements Listener
 
                         if (blockCanBeShocked(rightShockBlock)) // && is not in protected region
                         {
-                            shockBlock(rightShockBlock, player);
+                            if (regProtManager.isLocationPVPEnabled(player, rightShockBlock.getLocation()))
+                            {
+                                shockBlock(rightShockBlock, player);
+                            }
+                            else // cancel skill execution
+                            {
+                                if (!this.isCancelled())
+                                {
+                                    this.cancel();
+                                    return;
+                                }
+                            }
+
                         }
                     }
                         loc.add(newDirectionVector);
                 } else
                 {
                     //System.out.println("End of Shock at distance = " + distance);
-                    this.cancel();
+                    if (!this.isCancelled())
+                    {
+                        this.cancel();
+                    }
                 }
             }
         }.runTaskTimer(plugin, 0, 2L);
+
+        return true;
     }
 
     // returns whether a location is a valid place for a shock, and modifies the location of the block in place
@@ -195,7 +241,8 @@ public class ShockWave extends Ability implements Listener
             {
                 if (entity instanceof LivingEntity livingEntity &&
                         ((EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) > shockTimeCooldown) ||
-                        (EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) < 0)))
+                        (EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) < 0)) &&
+                        regProtManager.isLocationPVPEnabled(player, livingEntity.getLocation()))
                 {
                     livingEntity.damage(8, player);
                     livingEntity.setVelocity(new Vector(0,1,0).multiply(1));

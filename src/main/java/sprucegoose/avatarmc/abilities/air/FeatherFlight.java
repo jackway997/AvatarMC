@@ -62,11 +62,12 @@ public class FeatherFlight extends Ability implements Listener {
         }
     }
 
-    private void doAbility(JavaPlugin plugin, PlayerInteractEvent event)
+    private boolean doAbility(JavaPlugin plugin, PlayerInteractEvent event)
     {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         Location location = player.getEyeLocation();
+
         if (location.getPitch() >= -10)
         {
             location.setPitch(-10);
@@ -102,7 +103,6 @@ public class FeatherFlight extends Ability implements Listener {
         }, 20L * 2L, 20L);
         activeAbilities.put(uuid, task);
 
-
         Location takeOffLoc = player.getLocation();
         takeOffLoc.setPitch(-90);
         BukkitTask task2 = scheduler.runTaskTimer(plugin, () ->
@@ -119,6 +119,7 @@ public class FeatherFlight extends Ability implements Listener {
             groundAnimations.remove(uuid);
 
         }, 20L);
+        return true;
     }
 
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)

@@ -42,7 +42,6 @@ public class FireTrail extends Ability implements Listener {
     private final int cleanupDelay = 20;
     private final String NOSPREAD_KEY = "nospread";
 
-
     public FireTrail(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.fire, ABILITY_LEVEL.adept);
@@ -72,10 +71,14 @@ public class FireTrail extends Ability implements Listener {
 
     public boolean startTrail(JavaPlugin plugin, Player player)
     {
+        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        {
+            return false;
+        }
+
         UUID playerUUID = player.getUniqueId();
         fireTrailEnabledPlayers.add(playerUUID);
         fireTrailProtectionPlayers.add(playerUUID);
-
 
         // Apply speed boost when enabling the fire trail
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, fireTrailDuration, 3));
@@ -148,6 +151,12 @@ public class FireTrail extends Ability implements Listener {
             Location blockBehind = player.getLocation().add(direction);
             Location blockBehindBelow = blockBehind.clone().add(0,-1,0);
 
+            if (    !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                    !regProtManager.isLocationPVPEnabled(player, blockBehind))
+            { // end fire trail if player enters protected area
+                fireTrailProtectionPlayers.remove(playerUUID);
+                return;
+            }
             if (isPassableBlock(blockBehind.getBlock()))
             {
                 Block fireBlock = blockBehind.getBlock();
@@ -174,7 +183,8 @@ public class FireTrail extends Ability implements Listener {
     }
 
     // Helper method to check if a block is passable for fire trail placement
-    private boolean isPassableBlock(Block block) {
+    private boolean isPassableBlock(Block block)
+    {
         Material blockType = block.getType();
         return blockType == Material.AIR || blockType == Material.CAVE_AIR || blockType == Material.VOID_AIR;
     }
@@ -186,9 +196,11 @@ public class FireTrail extends Ability implements Listener {
         return getAbilityItem(plugin, player, lore, 1);
     }
 
-    private void setNoSpread(Block block) {
+    private void setNoSpread(Block block)
+    {
         String time = BlockUtil.setTimeStampedBlockMeta(plugin,NOSPREAD_KEY, block);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+        {
             if (BlockUtil.blockHasMetaAtTime(block,NOSPREAD_KEY,time))
             {
                 BlockUtil.removeTimeStampedBlockMeta(plugin,NOSPREAD_KEY,block);

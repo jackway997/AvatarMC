@@ -91,8 +91,7 @@ public class Stasis extends Ability implements Listener
 
         // don't execute ability if either player is in a PVP disabled zone, or no target is found.
         if (target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
-                (target instanceof Player targetPlayer &&
-                        !regProtManager.isLocationPVPEnabled(targetPlayer, targetPlayer.getLocation())))
+                        !regProtManager.isLocationPVPEnabled(player, target.getLocation()))
         {
             return false;
         }
@@ -138,9 +137,8 @@ public class Stasis extends Ability implements Listener
                 }
 
                 // if player or target is in a protected region, cancel the skill.
-                if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
-                        (target instanceof Player targetPlayer &&
-                                !regProtManager.isLocationPVPEnabled(targetPlayer, targetPlayer.getLocation())))
+                if (    !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                        !regProtManager.isLocationPVPEnabled(player, target.getLocation()))
                 {
                     if (!this.isCancelled())
                     {

@@ -26,7 +26,7 @@ public class MeteorStrike extends Ability implements Listener
     // To do: add particle circle on the ground while charging
     // cancel task and clear fallingSet on player leave game / die
 
-    public enum CHARGE_STATE {stage1, stage2, stage3, stage4}
+    public enum CHARGE_STATE {stage1, stage2}
 
 
     public MeteorStrike(JavaPlugin plugin, RegionProtectionManager regProtMan)
@@ -56,27 +56,27 @@ public class MeteorStrike extends Ability implements Listener
             // put in arrays to wrap into objects
             CHARGE_STATE[] state = {CHARGE_STATE.stage1};
             int[] timer = {0};
-            final int stage1 = 50, stage2 = 100, stage3 = 150;
+            final int stage1 = 50;
 
             BukkitRunnable chargeUpTask = new BukkitRunnable()
             {
                 @Override
                 public void run()
                 {
+                    if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+                    {
+                        this.cancel();
+                        return;
+                    }
+
                     if (player.isSneaking()) // and on ground
                     {
                         timer[0] += 1;
-                        if (timer[0] >= stage3)
-                        {
-                            state[0] = CHARGE_STATE.stage4;
-                        } else if (timer[0] >= stage2)
-                        {
-                            state[0] = CHARGE_STATE.stage3;
-                        } else if (timer[0] >= stage1)
+
+                        if (timer[0] >= stage1)
                         {
                             state[0] = CHARGE_STATE.stage2;
                         }
-
                         animateCharge(player, state[0]);
                     }
                     else
@@ -169,9 +169,14 @@ public class MeteorStrike extends Ability implements Listener
                 if (!(player.getLocation().getBlock().getRelative(BlockFace.DOWN, 2).isEmpty()
                     && player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1).isEmpty()))
                 {
-                    System.out.println("Cancelling");
                     this.cancel();
                     Location location = player.getLocation();
+
+                    if (!regProtManager.isLocationPVPEnabled(player, location))
+                    {
+                        return;
+                    }
+
                     location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location,
                             1, 0, 0, 0, 0);
 
@@ -183,10 +188,9 @@ public class MeteorStrike extends Ability implements Listener
                     {
                         for (Entity entity : entitiesHit)
                         {
-                            if (entity instanceof LivingEntity)
+                            if (entity instanceof LivingEntity livingEntity &&
+                                regProtManager.isLocationPVPEnabled(player, livingEntity.getLocation()))
                             {
-                                LivingEntity livingEntity = (LivingEntity)entity;
-
                                 // do something to each entity
                                 livingEntity.setFireTicks(3 * 20);
                                 livingEntity.damage(15, player);

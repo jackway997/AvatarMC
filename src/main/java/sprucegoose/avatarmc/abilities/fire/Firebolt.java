@@ -14,6 +14,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.RayTraceResult;
@@ -31,13 +32,13 @@ public class Firebolt extends Ability
 {
     private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private Map<UUID, BukkitTask> activeBends = new HashMap<>();
-    private Map<UUID, BukkitTask> flyingBends = new HashMap<>();
+    private Map<UUID, BukkitRunnable> flyingBends = new HashMap<>();
     private Map<UUID, BukkitTask> cancelTasks = new HashMap<>();
 
     public Firebolt(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.fire, ABILITY_LEVEL.adept);
-        setCooldown(3);
+        setCooldown(2000);
     }
 
     @EventHandler
@@ -55,8 +56,17 @@ public class Firebolt extends Ability
                 AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !flyingBends.containsKey(playerUUID))
         {
-            addCooldown(player, item);
-            doAbility(plugin, player);
+            if (activeBends.containsKey(playerUUID))
+            {
+                launchFirebolt(player);
+            }
+            else if (!onCooldown(player))
+            {
+                if (summonHandFlame(player))
+                {
+                    addCooldown(player, item);
+                }
+            }
             e.setCancelled(true);
         }
     }
@@ -85,39 +95,47 @@ public class Firebolt extends Ability
         return fireLoc;
     }
 
-    private void doAbility(JavaPlugin plugin, Player player)
+
+    private boolean summonHandFlame(Player player)
     {
         UUID playerUUID = player.getUniqueId();
 
-        if (!activeBends.containsKey(playerUUID)) // If not currently bending flame
+        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
         {
-
-            // Schedule Task to animate flame
-            BukkitScheduler scheduler = Bukkit.getScheduler();
-            BukkitTask task1 = scheduler.runTaskTimer(plugin, () ->
-            {
-                Location fireLoc = getFireLoc(player);
-
-                player.getWorld().spawnParticle(Particle.FLAME, fireLoc, 2, 0, 0, 0, 0);
-                player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, fireLoc, 1, 0, 0, 0, 0);
-            }, 0, 1L);
-            activeBends.put(playerUUID, task1);
-
-            // With BukkitScheduler
-            BukkitTask task2 = scheduler.runTaskLater(plugin, () ->
-            {
-                BukkitTask animationTask = activeBends.get(playerUUID);
-                if (animationTask != null)
-                {
-                    animationTask.cancel();
-                    activeBends.remove(playerUUID);
-                    cancelTasks.remove(playerUUID);
-                }
-
-            }, 5L * 20L);
-            cancelTasks.put(playerUUID, task2);
+            return false;
         }
-        else // launch flame
+
+        // Schedule Task to animate flame
+        BukkitScheduler scheduler = Bukkit.getScheduler();
+        BukkitTask task1 = scheduler.runTaskTimer(plugin, () ->
+        {
+            Location fireLoc = getFireLoc(player);
+
+            player.getWorld().spawnParticle(Particle.FLAME, fireLoc, 2, 0, 0, 0, 0);
+            player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, fireLoc, 1, 0, 0, 0, 0);
+        }, 0, 1L);
+        activeBends.put(playerUUID, task1);
+
+        // With BukkitScheduler
+        BukkitTask task2 = scheduler.runTaskLater(plugin, () ->
+        {
+            BukkitTask animationTask = activeBends.get(playerUUID);
+            if (animationTask != null)
+            {
+                animationTask.cancel();
+                activeBends.remove(playerUUID);
+                cancelTasks.remove(playerUUID);
+            }
+
+        }, 5L * 20L);
+        cancelTasks.put(playerUUID, task2);
+        return true;
+    }
+
+    private void launchFirebolt(Player player)
+    {
+        UUID playerUUID = player.getUniqueId();
+
         {
             double maxRange = 50.0; // Adjust the maximum range as desired
             double stepSize = 1;
@@ -139,56 +157,81 @@ public class Firebolt extends Ability
                 cancelTasks.remove(playerUUID);
             }
 
-            BukkitScheduler scheduler = Bukkit.getScheduler();
-            BukkitTask task1 = scheduler.runTaskTimer(plugin, () ->
+            if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
             {
-                double distance = originalLocation.distance(location);
-                if (distance < maxRange)
-                {
-                    location.add(direction.clone().multiply(stepSize));
-                    Block block = location.getBlock();
-                    if (!block.isPassable())
-                    {
-                        flyingBends.get(playerUUID).cancel();
-                        flyingBends.remove(playerUUID);
-                    } else
-                    {
-                        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, 1, 1, 1);
-                        entitiesHit.remove(player);
-                        if (!entitiesHit.isEmpty())
-                        {
-                            boolean targetHit = false;
-                            for (Entity entity : entitiesHit)
-                            {
-                                if (entity instanceof LivingEntity)
-                                {
-                                    LivingEntity livingEntity = (LivingEntity)entity;
-                                    targetHit = true;
+                return;
+            }
 
-                                    // do something to each entity
-                                    livingEntity.setFireTicks(3 * 20);
-                                    livingEntity.damage(6, player);
-                                    entity.getWorld().spawnParticle(Particle.CRIT_MAGIC,
-                                            entity.getLocation(), 1, 0, 0, 0, 0);
-                                    flyingBends.get(playerUUID).cancel();
-                                    flyingBends.remove(playerUUID);
-                                    break;
+            BukkitRunnable scheduler = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    double distance = originalLocation.distance(location);
+                    if (distance < maxRange)
+                    {
+                        location.add(direction.clone().multiply(stepSize));
+                        Block block = location.getBlock();
+                        if (!block.isPassable())
+                        {
+                            flyingBends.get(playerUUID).cancel();
+                            flyingBends.remove(playerUUID);
+                        } else
+                        {
+                            Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, 1, 1, 1);
+                            entitiesHit.remove(player);
+                            if (!entitiesHit.isEmpty())
+                            {
+                                for (Entity entity : entitiesHit)
+                                {
+                                    if (entity instanceof LivingEntity)
+                                    {
+                                        if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                                        {
+                                            LivingEntity livingEntity = (LivingEntity) entity;
+
+                                            // do something to each entity
+                                            livingEntity.setFireTicks(3 * 20);
+                                            livingEntity.damage(6, player);
+                                            entity.getWorld().spawnParticle(Particle.CRIT_MAGIC,
+                                                    entity.getLocation(), 1, 0, 0, 0, 0);
+                                            flyingBends.get(playerUUID).cancel();
+                                            flyingBends.remove(playerUUID);
+                                            if (!this.isCancelled())
+                                            {
+                                                this.cancel();
+                                            }
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            if (!this.isCancelled())
+                                            {
+                                                this.cancel();
+                                                return;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                    player.getWorld().spawnParticle(Particle.FLAME, location, 2, 0, 0, 0, 0);
-                    player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, location, 1, 0, 0, 0, 0);
+                        player.getWorld().spawnParticle(Particle.FLAME, location, 2, 0, 0, 0, 0);
+                        player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, location, 1, 0, 0, 0, 0);
 
-                } else
-                {
-                    flyingBends.get(playerUUID).cancel();
-                    flyingBends.remove(playerUUID);
+                    } else
+                    {
+                        if (!this.isCancelled())
+                        {
+                            this.cancel();
+                        }
+                    }
+
                 }
-            } , 0, 1L);
-            flyingBends.put(playerUUID, task1);
+            };
+            scheduler.runTaskTimer(plugin, 0, 1L);
+
+            flyingBends.put(playerUUID, scheduler);
         }
     }
+
 }
 
 

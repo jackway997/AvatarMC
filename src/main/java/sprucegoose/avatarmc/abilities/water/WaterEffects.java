@@ -55,7 +55,7 @@ public class WaterEffects implements Listener
             //if ((EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) -
             //        Integer.ParseInt(EntityUtil.getEntityTag(entity, freezeDurationKey)) > duration)
             //    return;
-            startFreezeAnimation(entity, duration * 20);
+            startFreezeAnimation(entity, duration);
             EntityUtil.setTimeStampedEntityMeta(plugin, freezeTimeStampKey, entity);
             EntityUtil.setEntityMeta(plugin, entity, freezeDurationKey, String.valueOf(duration));
             EntityUtil.setEntityMeta(plugin, entity, freezeDamageKey, String.valueOf(0));
@@ -100,7 +100,7 @@ public class WaterEffects implements Listener
                 unfreezeEntity(entity);
             }
         };
-        unFreezeTask.runTaskLater(plugin, duration * 20L);
+        unFreezeTask.runTaskLater(plugin, duration);
     }
 
     public void unfreezeEntity(LivingEntity entity)
@@ -129,7 +129,9 @@ public class WaterEffects implements Listener
 
         try
         {
-            return EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) <=
+            System.out.println("elapsed time: "+ EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey));
+            System.out.println("duration: "+ Integer.parseInt(EntityUtil.getEntityTag(entity,freezeDurationKey)));
+            return EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) * 20 <=
                     Integer.parseInt(EntityUtil.getEntityTag(entity,freezeDurationKey));
         }
         catch (NumberFormatException e)

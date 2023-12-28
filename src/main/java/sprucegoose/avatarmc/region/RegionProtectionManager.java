@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.bukkit.Bukkit.getServer;
+import com.massivecraft.factions.*;
 
 public class RegionProtectionManager
 {
@@ -19,13 +20,14 @@ public class RegionProtectionManager
         {
             WorldGuard wg =new WorldGuard();
             registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard"), wg);
-            System.out.println("World Guard Registered!!!!");
+            System.out.println("World Guard Registered!");
             getServer().getPluginManager().registerEvents(wg, plugin);
         }
         if (enabled("Factions"))
         {
             registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
                     new SaberFactions());
+            System.out.println("Factions Registered!");
         }
     }
 

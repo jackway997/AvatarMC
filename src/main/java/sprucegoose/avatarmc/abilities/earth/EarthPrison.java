@@ -54,8 +54,10 @@ public class EarthPrison extends Ability
                 AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player))
         {
-            doAbility(e.getPlayer());
-            addCooldown(player,item);
+            if (doAbility(e.getPlayer()))
+            {
+                addCooldown(player, item);
+            }
             e.setCancelled(true);
         }
     }
@@ -68,16 +70,19 @@ public class EarthPrison extends Ability
         return getAbilityItem(plugin, player, lore, 2);
     }
 
-    private void doAbility(Player player)
+    private boolean doAbility(Player player)
     {
-        System.out.println("doing ability");
         LivingEntity target = AbilityUtil.getHostileLOS(player, 24.0, 0.5);
-        if (target == null)
-            return;
 
+        // don't execute ability if either player is in a PVP disabled zone, or no target is found.
+        if (    target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
+                !regProtManager.isLocationPVPEnabled(player, target.getLocation()))
+        {
+            return false;
+        }
         Location targetLoc = target.getLocation().getBlock().getLocation();
 
-        System.out.println("targeting: "+ target);
+        //System.out.println("targeting: "+ target);
         Set<Location> prisonLocs = new HashSet<>();
 
         prisonLocs.add(targetLoc.clone().add(1,-1,0));
@@ -96,7 +101,7 @@ public class EarthPrison extends Ability
             }
         }
         if (prisonLocs2.isEmpty())
-            return;
+            return false;
 
         // teleport target to the centre of the current block they're on
         Location centredLocation = target.getLocation().getBlock().getLocation().clone().add(0.5,0,0.5);
@@ -107,6 +112,7 @@ public class EarthPrison extends Ability
         {
             buildPrisonPillar(loc,6);
         }
+        return true;
     }
 
     private void buildPrisonPillar(Location location, int height)

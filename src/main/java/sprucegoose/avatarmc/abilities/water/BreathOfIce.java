@@ -40,7 +40,7 @@ public class BreathOfIce extends WaterAbility
         ItemStack mainItem = player.getInventory().getItemInMainHand();
         ItemStack offHandItem = player.getInventory().getItemInOffHand();
 
-        if (    mainItem != null && AvatarIDs.itemStackHasAvatarID(plugin,mainItem, this.getAbilityID()) &&
+        if (    AvatarIDs.itemStackHasAvatarID(plugin,mainItem, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, mainItem, player) && !onCooldown(player) && e.isSneaking())
         {
             if (!onCooldown(player))
@@ -49,7 +49,7 @@ public class BreathOfIce extends WaterAbility
                 doAbility(plugin, player);
             }
         }
-        else if (offHandItem != null && AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
+        else if (AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
                         PlayerIDs.itemStackHasPlayerID(plugin, offHandItem, player) && !onCooldown(player) && e.isSneaking())
 
         {
@@ -93,7 +93,7 @@ public class BreathOfIce extends WaterAbility
             public void run()
             {
 
-                if (!player.isSneaking())
+                if (!player.isSneaking() || !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
                 {
                     if(!this.isCancelled())
                     {
@@ -115,8 +115,17 @@ public class BreathOfIce extends WaterAbility
                 // for each nearby entity, calculate angle deviation
                 for (Entity entity : nearbyEntities)
                 {
-                    if (entity instanceof LivingEntity lEntity)
+                    if (entity instanceof LivingEntity lEntity )
                     {
+                        if (!regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                        {
+                            if (!this.isCancelled())
+                            {
+                                this.cancel();
+                            }
+                            return;
+                        }
+
                         UUID entityID = lEntity.getUniqueId();
                         thisScan.add(entityID);
 
@@ -148,7 +157,7 @@ public class BreathOfIce extends WaterAbility
                             // if entity
                             if (taggedEntityList.get(entityID) >= freezeTicks)
                             {
-                                waterEffects.freezeEntity(lEntity, 10);
+                                waterEffects.freezeEntity(lEntity, 5 * 20);
                                 taggedEntityList.put(entityID, 0);
                             }
                         }
