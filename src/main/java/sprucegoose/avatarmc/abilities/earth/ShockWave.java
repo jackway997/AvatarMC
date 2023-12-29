@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.checkerframework.framework.qual.NoQualifierParameter;
 import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
@@ -63,52 +64,67 @@ public class ShockWave extends Ability implements Listener
                 PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
         )
         {
-            addCooldown(player, item);
-            doAbility(plugin, player);
+
+            if (doAbilityAsPlayer(plugin, player))
+            {
+                addCooldown(player, item);
+            }
             e.setCancelled(true);
         }
     }
 
-    private boolean doAbility(JavaPlugin plugin, Player player)
+    @Override
+    public void doHostileAbilityAsMob(JavaPlugin plugin, LivingEntity caster, LivingEntity target)
+    {
+        Vector directionVector = target.getLocation().clone().subtract(caster.getLocation().clone()).toVector().normalize();
+        doAbility(plugin, caster, directionVector);
+    }
+
+    public boolean doAbilityAsPlayer(JavaPlugin plugin, Player player)
+    {
+        Vector playerEyeVector = player.getEyeLocation().clone().getDirection();
+        Vector directionVector = new Vector(playerEyeVector.getX(),0,playerEyeVector.getZ()).normalize();
+
+        return doAbility(plugin, player, directionVector);
+    }
+
+    private boolean doAbility(JavaPlugin plugin, LivingEntity caster, Vector directionVector)
     {
         final double maxDistance = 16;
         final double stepSize = 0.5;
         final double shockRadius = 2.0;
 
-        // don't execute ability if player is in a PVP disabled zone
-        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        // don't execute ability if entity is in a PVP disabled zone
+        if (!regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
         {
             return false;
         }
 
-        Vector directionVector = player.getEyeLocation().clone().getDirection();
-        Vector newDirectionVector = new Vector(directionVector.getX(),0,directionVector.getZ()).normalize();
-        Location loc = player.getLocation().clone();
-        loc.add(directionVector.clone().multiply(2));
-        Location originalLocation = loc.clone();
-
+        Location skillLocation = caster.getLocation().clone();
+        skillLocation.add(directionVector.clone().multiply(1.5)); // check this value
+        Location castLocation = skillLocation.clone();
 
         new BukkitRunnable()
         {
             @Override
             public void run()
             {
-                double distance = originalLocation.distance(loc);
+                double distance = castLocation.distance(skillLocation);
                 if (distance < maxDistance)
                 {
-                    if (!checkLocUpDown(loc))
+                    if (!checkLocUpDown(skillLocation))
                     {
                         this.cancel();
                         return;
                     }
 
-                    Block shockBlock = loc.getBlock();
+                    Block shockBlock = skillLocation.getBlock();
 
                     if (blockCanBeShocked(shockBlock)) // && is not in protected region
                     {
-                        if (regProtManager.isLocationPVPEnabled(player, shockBlock.getLocation()))
+                        if (regProtManager.isLocationPVPEnabled(caster, shockBlock.getLocation()))
                         {
-                            shockBlock(shockBlock, player);
+                            shockBlock(shockBlock, caster);
                         }
                         else // cancel skill execution
                         {
@@ -121,10 +137,10 @@ public class ShockWave extends Ability implements Listener
                     }
 
                     // shock other blocks along that axis if possible
-                    double theta = loc.getYaw();
+                    double theta = skillLocation.getYaw();
 
                     // left side
-                    Location leftShockLoc = loc.clone();
+                    Location leftShockLoc = skillLocation.clone();
                     Vector leftStepVector = new Vector(1*stepSize*Math.cos(theta*Math.PI/180),0, 1*stepSize*Math.sin(theta*Math.PI/180));
                     for (double ii = 0.0; ii < shockRadius; ii = ii + stepSize)
                     {
@@ -135,9 +151,9 @@ public class ShockWave extends Ability implements Listener
 
                         if (blockCanBeShocked(leftShockBlock)) // && is not in protected region
                         {
-                            if (regProtManager.isLocationPVPEnabled(player, leftShockBlock.getLocation()))
+                            if (regProtManager.isLocationPVPEnabled(caster, leftShockBlock.getLocation()))
                             {
-                                shockBlock(leftShockBlock, player);
+                                shockBlock(leftShockBlock, caster);
                             }
                             else // cancel skill execution
                             {
@@ -151,7 +167,7 @@ public class ShockWave extends Ability implements Listener
                     }
 
                     // right side
-                    Location rightShockLoc = loc.clone();
+                    Location rightShockLoc = skillLocation.clone();
                     Vector rightStepVector = new Vector(-1*stepSize*Math.cos(theta*Math.PI/180),0, -1*stepSize*Math.sin(theta*Math.PI/180));
                     for (double ii = 0.0; ii < shockRadius; ii = ii + stepSize)
                     {
@@ -161,9 +177,9 @@ public class ShockWave extends Ability implements Listener
 
                         if (blockCanBeShocked(rightShockBlock)) // && is not in protected region
                         {
-                            if (regProtManager.isLocationPVPEnabled(player, rightShockBlock.getLocation()))
+                            if (regProtManager.isLocationPVPEnabled(caster, rightShockBlock.getLocation()))
                             {
-                                shockBlock(rightShockBlock, player);
+                                shockBlock(rightShockBlock, caster);
                             }
                             else // cancel skill execution
                             {
@@ -176,7 +192,7 @@ public class ShockWave extends Ability implements Listener
 
                         }
                     }
-                        loc.add(newDirectionVector);
+                        skillLocation.add(directionVector);
                 } else
                 {
                     //System.out.println("End of Shock at distance = " + distance);
@@ -215,7 +231,7 @@ public class ShockWave extends Ability implements Listener
         }
     }
 
-    private void shockBlock(Block block, Player player)
+    private void shockBlock(Block block, LivingEntity caster)
     {
         // Constants
         final double shockTimeCooldown = 2.0;
@@ -237,22 +253,20 @@ public class ShockWave extends Ability implements Listener
         Location loc = block.getLocation();
         for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1, 2, 1))
         {
-            if (!(entity instanceof Player && entity.getUniqueId() == player.getUniqueId()))
+            if (!(entity.getUniqueId() == caster.getUniqueId()))
             {
                 if (entity instanceof LivingEntity livingEntity &&
                         ((EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) > shockTimeCooldown) ||
                         (EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) < 0)) &&
-                        regProtManager.isLocationPVPEnabled(player, livingEntity.getLocation()))
+                        regProtManager.isLocationPVPEnabled(caster, livingEntity.getLocation()))
                 {
-                    livingEntity.damage(8, player);
+                    livingEntity.damage(8, caster);
                     livingEntity.setVelocity(new Vector(0,1,0).multiply(1));
                     livingEntity.setNoDamageTicks(8);
-                    System.out.println("damaging: "+ livingEntity.getEntityId());
                     EntityUtil.setTimeStampedEntityMeta(plugin, shockTimeKey, livingEntity);
                 }
             }
         }
-        //System.out.println("count increased to " + activeBends.get(uuid));
     }
 
     private boolean blockCanBeShocked(Block block)

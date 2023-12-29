@@ -79,7 +79,7 @@ public class AbilityStorage
                 db.modifyQuery("INSERT INTO player_abilities (uuid, player_name, ability) VALUES ('" + uuid + "', '"+ playerName + "', '" + ability + "');", async);
                 logger.info(playerName +" learnt "+ ability +".");
             } else {
-                logger.warning("Tried to add "+ ability +"to player with uuid="+ uuid.toString() +", but they already have it!");
+                logger.warning("Tried to add "+ ability +" to player with uuid="+ uuid.toString() +", but they already have it!");
             }
         } catch (final SQLException e) {
             e.printStackTrace();

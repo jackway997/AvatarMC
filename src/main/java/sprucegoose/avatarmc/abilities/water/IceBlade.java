@@ -128,6 +128,9 @@ public class IceBlade extends WaterAbility implements Listener
     {
         int slot = e.getSlot();
         Inventory inv = e.getClickedInventory();
+
+        if(inv == null) return;
+
         ItemStack item = inv.getItem(slot);
         if (item != null && ItemMetaTag.itemStackHasAnyTag(plugin, item, skillKey))
         {

@@ -2,6 +2,7 @@ package sprucegoose.avatarmc.region;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -41,5 +42,5 @@ public abstract class RegionProtectionBase {
 
     public abstract boolean isLocationBreakable(@NotNull Player player, @NotNull Location location);
 
-    public abstract boolean isLocationPVPEnabled(@NotNull Player player, @NotNull Location location);
+    public abstract boolean isLocationPVPEnabled(@NotNull LivingEntity entity, @NotNull Location location);
 }

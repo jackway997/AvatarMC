@@ -13,6 +13,12 @@ commands:
   give_ability:
     description: teaches player ability
     usage: /<command> ability_name
+  give_ability_book:
+    description: gives player ability book
+    usage: /<command> player_name ability_name source
+  mob_use_hostile_ability:
+    description: uses a hostile ability as a mob
+    usage: /<command> casterID target_player ability
   remove_ability:
     description: removes ability from player
     usage: /<command> ability_name

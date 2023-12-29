@@ -2,6 +2,7 @@ package sprucegoose.avatarmc.region;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import sprucegoose.avatarmc.abilities.Ability;
@@ -34,7 +35,7 @@ class SaberFactions extends RegionProtectionBase {
     }
 
     @Override
-    public boolean isLocationPVPEnabled(@NotNull Player player, @NotNull Location location) {
+    public boolean isLocationPVPEnabled(@NotNull LivingEntity entity, @NotNull Location location) {
         return true;
     }
 }

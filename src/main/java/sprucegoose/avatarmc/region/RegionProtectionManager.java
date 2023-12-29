@@ -2,6 +2,7 @@ package sprucegoose.avatarmc.region;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -52,10 +53,10 @@ public class RegionProtectionManager
         }
     }
 
-    public boolean isLocationPVPEnabled(Player player, Location location) {
-        if (location != null && player != null);
+    public boolean isLocationPVPEnabled(LivingEntity entity, Location location) {
+        if (location != null && entity != null);
         {
-            return checkIsLocationPVPEnabled(player, location);
+            return checkIsLocationPVPEnabled(entity, location);
         }
     }
 
@@ -72,10 +73,10 @@ public class RegionProtectionManager
         return true;
     }
 
-    private boolean checkIsLocationPVPEnabled(Player player, Location location) {
+    private boolean checkIsLocationPVPEnabled(LivingEntity entity, Location location) {
         for (RegionProtectionBase protection : this.getActiveProtections().values()) {
             try {
-                if (!protection.isLocationPVPEnabled(player, location)) {
+                if (!protection.isLocationPVPEnabled(entity, location)) {
                     return false;
                 }
             } catch (Exception e) {

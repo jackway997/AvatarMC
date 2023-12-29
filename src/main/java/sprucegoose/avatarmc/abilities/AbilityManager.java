@@ -1,5 +1,6 @@
 package sprucegoose.avatarmc.abilities;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -125,6 +126,46 @@ public class AbilityManager implements Listener
             return true;
         }
         else return false;
+    }
+
+    public boolean giveAbilityBook(Player player, String ability) {
+        if (abilityMatrix.containsKey(ability))
+        {
+            Ability abilityObject = abilityMatrix.get(ability);
+            HashMap<Integer, ItemStack> drops = player.getInventory().addItem(abilityObject.getSkillBookItem(plugin));
+            for (ItemStack item : drops.values())
+            {
+                player.getWorld().dropItem(player.getLocation(), item);
+            }
+            return true;
+        }
+        else return false;
+    }
+
+    public String abilityIDtoName(String ID)
+    {
+        if (abilityMatrix.containsKey(ID))
+        {
+            return abilityMatrix.get(ID).getAbilityName();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public Ability getAbilityFromString(String ability)
+    {
+        return abilityMatrix.getOrDefault(ability, null);
+    }
+
+    public ChatColor getAbilityColor(String ability)
+    {
+        if (abilityMatrix.containsKey(ability))
+        {
+            return abilityMatrix.get(ability).getBookColour();
+        }
+        else return null;
     }
 
     @EventHandler

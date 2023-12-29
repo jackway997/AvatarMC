@@ -3,12 +3,14 @@ package sprucegoose.avatarmc.abilities;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
@@ -76,7 +78,13 @@ public abstract class Ability implements Listener {
         };
     }
 
-    protected ChatColor getBookColour()
+    public void doHostileAbilityAsMob(JavaPlugin plugin, LivingEntity caster, LivingEntity target)
+    {
+        throw new IllegalArgumentException("doHostileAbilityAsMob() not implemented for: "+ getAbilityName());
+    }
+
+
+    public ChatColor getBookColour()
     {
         return switch (level) {
             case beginner -> ChatColor.GRAY;
@@ -128,12 +136,17 @@ public abstract class Ability implements Listener {
 
     public final String getAbilityID()
     {
+        return (this.getClass().getSimpleName());
+    }
+
+    public final String getAbilityName()
+    {
         return (this.getClass().getSimpleName()).replaceAll("(?=[A-Z]+)", " ").trim();
     }
 
     public String toString()
     {
-        return getAbilityID();
+        return getAbilityName();
     }
     public final String getAbilityBookID()
     {
@@ -148,7 +161,7 @@ public abstract class Ability implements Listener {
         ItemStack skill = new ItemStack(getAbililityMaterial(), 1);
 
         ItemMeta skill_meta = skill.getItemMeta();
-        skill_meta.setDisplayName(getSkillTitleColor() +""+ ChatColor.BOLD +""+ getAbilityID());
+        skill_meta.setDisplayName(getSkillTitleColor() +""+ ChatColor.BOLD +""+ getAbilityName());
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC + "(Soulbound)");
         lore.addAll(description);
@@ -166,7 +179,7 @@ public abstract class Ability implements Listener {
     {
         ItemStack skillBook = new ItemStack(Material.BOOK, 1);
         ItemMeta skill_meta = skillBook.getItemMeta();
-        String displayName = getBookColour() + "" + ChatColor.BOLD + getAbilityID();
+        String displayName = getBookColour() + "" + ChatColor.BOLD + getAbilityName();
         skill_meta.setDisplayName(displayName);
         ArrayList<String> lore = new ArrayList<String>();
         lore.add(ChatColor.DARK_GRAY + "" + ChatColor.ITALIC +"(shift-right click to learn)");
