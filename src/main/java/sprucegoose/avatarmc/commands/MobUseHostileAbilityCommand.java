@@ -42,7 +42,7 @@ public class MobUseHostileAbilityCommand implements CommandExecutor
 
         if (target != null && ability != null)
         {
-            ability.doHostileAbilityAsMob(plugin, caster, target);
+            ability.doHostileAbilityAsMob(caster, target);
         }
         else
         {

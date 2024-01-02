@@ -79,6 +79,7 @@ public class AirBlast extends Ability implements Listener
         player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, player.getLocation().add(direction).add(0,1,0), 25);
 
         target.damage(damage); // Adjust the damage as needed
+        regProtManager.tagEntity(target, player);
 
         Location hitLocation = target.getLocation();
         hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 25);

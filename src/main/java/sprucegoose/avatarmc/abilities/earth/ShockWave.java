@@ -74,7 +74,7 @@ public class ShockWave extends Ability implements Listener
     }
 
     @Override
-    public void doHostileAbilityAsMob(JavaPlugin plugin, LivingEntity caster, LivingEntity target)
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
     {
         Vector directionVector = target.getLocation().clone().subtract(caster.getLocation().clone()).toVector().normalize();
         doAbility(plugin, caster, directionVector);

@@ -23,7 +23,9 @@ import java.util.UUID;
 public abstract class Ability implements Listener {
 
     public enum ELEMENT_TYPE {air, water, earth, fire}
+
     public enum ABILITY_LEVEL {beginner, adept, expert, master}
+
     public final HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
     private ELEMENT_TYPE element;
     private ABILITY_LEVEL level;
@@ -32,44 +34,39 @@ public abstract class Ability implements Listener {
     protected RegionProtectionManager regProtManager;
     private static final String skillBookKey = "AvatarMCSkillBookKey";
 
-    public Ability(JavaPlugin plugin, RegionProtectionManager regProtManager, ELEMENT_TYPE element, ABILITY_LEVEL level)
-    {
+    public Ability(JavaPlugin plugin, RegionProtectionManager regProtManager, ELEMENT_TYPE element, ABILITY_LEVEL level) {
         this.plugin = plugin;
         this.regProtManager = regProtManager;
         this.element = element;
         this.level = level;
     }
 
-    public ELEMENT_TYPE getElement(){
+    public ELEMENT_TYPE getElement() {
         return this.element;
     }
 
-    public static final String getSkillBookKey()
-    {
+    public static final String getSkillBookKey() {
         return skillBookKey;
     }
-    public void setCooldown(long cooldown)
-    {
+
+    public void setCooldown(long cooldown) {
         this.cooldown = cooldown;
     }
 
-    public void addCooldown(Player player, ItemStack item)
-    {
+    public void addCooldown(Player player, ItemStack item) {
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
         //System.out.println("Cooldown added for "+ player.getName()); // debug info
         updateCooldownDisplay(player, item);
     }
 
-    public boolean onCooldown(Player player)
-    {
+    public boolean onCooldown(Player player) {
         Long lastTime = cooldowns.get(player.getUniqueId());
         if (lastTime == null)
             return false;
         else return (System.currentTimeMillis() - lastTime) < cooldown;
     }
 
-    protected int getBookModelData()
-    {
+    protected int getBookModelData() {
         return switch (element) {
             case air -> 1;
             case earth -> 2;
@@ -78,9 +75,8 @@ public abstract class Ability implements Listener {
         };
     }
 
-    public void doHostileAbilityAsMob(JavaPlugin plugin, LivingEntity caster, LivingEntity target)
-    {
-        throw new IllegalArgumentException("doHostileAbilityAsMob() not implemented for: "+ getAbilityName());
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target) {
+        throw new IllegalArgumentException("doHostileAbilityAsMob(LivingEntity caster, LivingEntity target) not implemented for: " + getAbilityName());
     }
 
 

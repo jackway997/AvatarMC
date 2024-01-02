@@ -10,10 +10,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.bukkit.Bukkit.getServer;
-import com.massivecraft.factions.*;
+import me.NoChance.PvPManager.*;
 
 public class RegionProtectionManager
 {
+    private Map<JavaPlugin, RegionProtectionBase> PROTECTIONS = new LinkedHashMap<>(); //LinkedHashMap keeps the hashmap order of insertion
+    private PVPManager pvpManager;
+
     public RegionProtectionManager(JavaPlugin plugin)
     {
 
@@ -21,18 +24,21 @@ public class RegionProtectionManager
         {
             WorldGuard wg =new WorldGuard();
             registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard"), wg);
-            System.out.println("World Guard Registered!");
+            plugin.getLogger().info("World Guard Registered!");
             getServer().getPluginManager().registerEvents(wg, plugin);
         }
         if (enabled("Factions"))
         {
             registerRegionProtection((JavaPlugin) Bukkit.getPluginManager().getPlugin("Factions"),
                     new SaberFactions());
-            System.out.println("Factions Registered!");
+            plugin.getLogger().info("Factions Registered!");
+        }
+        if (enabled("PvPManager"))
+        {
+                pvpManager = new PVPManager("PvPManager");
+                plugin.getLogger().info("PvPManager Registered!");
         }
     }
-
-    private Map<JavaPlugin, RegionProtectionBase> PROTECTIONS = new LinkedHashMap<>(); //LinkedHashMap keeps the hashmap order of insertion
 
     public void registerRegionProtection( JavaPlugin plugin, RegionProtectionBase regionProtection) {
         PROTECTIONS.put(plugin, regionProtection);
@@ -89,5 +95,14 @@ public class RegionProtectionManager
     private static boolean enabled(String plugin) {
         return Bukkit.getPluginManager().isPluginEnabled(plugin);
     }
+
+    public void tagEntity(LivingEntity target, LivingEntity attacker)
+    {
+        if(target instanceof Player p1 && attacker instanceof Player p2)
+        {
+            pvpManager.tagPlayer(p1, p2);
+        }
+    }
+
 
 }

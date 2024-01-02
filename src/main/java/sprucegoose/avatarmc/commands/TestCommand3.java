@@ -29,14 +29,23 @@ public class TestCommand3 implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] strings)
     {
-        if (sender instanceof Player player)
+        Player player;
+        if(strings.length == 1)
         {
-            System.out.println("breakable: "+ regionProtectionManager.isLocationBreakable(player, player.getLocation()));
-            System.out.println("PVP: "+ regionProtectionManager.isLocationPVPEnabled(player, player.getLocation()));
+            player = plugin.getServer().getPlayer(strings[0]);
         }
+        else if (sender instanceof Player)
+        {
+            player = (Player)sender;
+        }
+        else
+        {
+            sender.sendMessage("Invalid use of command");
+            return true;
+        }
+        regionProtectionManager.tagEntity(player, player);
+        plugin.getLogger().info("Tagging player as player");
 
         return true;
     }
-
-
 }

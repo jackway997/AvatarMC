@@ -56,17 +56,30 @@ public class Fireball extends Ability
 
             if (activeBends.containsKey(playerUUID))
             {
-                launchFireball(plugin, player);
+                launchFireBallAsPlayer(player);
             }
             else if (!onCooldown(player))
             {
-                if (summonHandFlame(plugin, player))
+                if (summonHandFlame(player))
                 {
                     addCooldown(player, item);
                 }
 
             }
         }
+    }
+
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
+    {
+        Vector direction = target.getLocation().clone().subtract(caster.getLocation().clone()).toVector().normalize();
+        launchFireball(caster, direction);
+    }
+
+    public void launchFireBallAsPlayer(Player caster)
+    {
+        Vector direction = caster.getEyeLocation().getDirection().normalize();
+        launchFireball(caster, direction);
     }
 
     public ItemStack getAbilityItem (JavaPlugin plugin, Player player)
@@ -77,14 +90,14 @@ public class Fireball extends Ability
         return getAbilityItem(plugin, player, lore, 2);
     }
 
-    public Location getFireLoc (Player player)
+    public Location getFireLoc (LivingEntity caster)
     {
         double sideScaleFactor = 0.55;
         double fireDownScaleFactor = 0.25;
 
-        Location fireLoc = player.getEyeLocation();
-        Vector sideWayOffset = player.getLocation().getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(sideScaleFactor);
-        Vector fireDownOffset = player.getLocation().getDirection().crossProduct(sideWayOffset).normalize().multiply(fireDownScaleFactor);
+        Location fireLoc = caster.getEyeLocation();
+        Vector sideWayOffset = caster.getLocation().getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(sideScaleFactor);
+        Vector fireDownOffset = caster.getLocation().getDirection().crossProduct(sideWayOffset).normalize().multiply(fireDownScaleFactor);
 
         //Add offsets
         fireLoc.add(fireLoc.getDirection().multiply(1));
@@ -94,7 +107,7 @@ public class Fireball extends Ability
         return fireLoc;
     }
 
-    private boolean summonHandFlame(JavaPlugin plugin, Player player)
+    private boolean summonHandFlame(Player player)
     {
         UUID playerUUID = player.getUniqueId();
 
@@ -134,15 +147,14 @@ public class Fireball extends Ability
         return true;
     }
 
-    private void launchFireball(JavaPlugin plugin, Player player)
+    private void launchFireball(LivingEntity caster, Vector direction)
     {
-        UUID playerUUID = player.getUniqueId();
+        UUID playerUUID = caster.getUniqueId();
 
         double maxRange = 50.0; // Adjust the maximum range as desired
         double stepSize = 1;
-        Location location = getFireLoc(player);
+        Location location = getFireLoc(caster);
         Location originalLocation = location.clone();
-        Vector direction = player.getEyeLocation().getDirection().normalize();
 
         // Remove Static flame animation //////////
 
@@ -156,13 +168,13 @@ public class Fireball extends Ability
             activeBends.remove(playerUUID);
         }
 
-        if ( !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        if ( !regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
         {
             return;
         }
 
         // Animate Directional Flame
-        spawnFireball(player, location, direction, stepSize);
+        spawnFireball(caster, location, direction, stepSize);
 
         BukkitRunnable fireballTask = new BukkitRunnable()
         {
@@ -177,20 +189,20 @@ public class Fireball extends Ability
                     if (!block.isPassable()) // if fireball hits something solid
                     {
                         this.cancel();
-                        explodeFireball(location, player, 3);
+                        explodeFireball(location, caster, 3);
 
                     } else
                     {
                         // Check to collision with entity (radius of 1)
                         Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, 1, 1, 1);
-                        entitiesHit.remove(player);
+                        entitiesHit.remove(caster);
                         if (!entitiesHit.isEmpty()) // if entity hit
                         {
                             this.cancel();
-                            explodeFireball(location, player, 3);
+                            explodeFireball(location, caster, 3);
                         } else
                         {
-                            player.getWorld().spawnParticle(Particle.SMOKE_LARGE, location, 1, 0, 0, 0, 0);
+                            caster.getWorld().spawnParticle(Particle.SMOKE_LARGE, location, 1, 0, 0, 0, 0);
                         }
                     }
 
@@ -203,34 +215,34 @@ public class Fireball extends Ability
         fireballTask.runTaskTimer(plugin, 0, 1L);
     }
 
-    public void explodeFireball(Location location, Player player, int blastRadius)
+    public void explodeFireball(Location location, LivingEntity caster, int blastRadius)
     {
         location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location,
                 1, 0, 0, 0, 0);
 
         // get all entities in blast radius
         Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, blastRadius, blastRadius, blastRadius);
-        entitiesHit.remove(player);
+        entitiesHit.remove(caster);
         if (!entitiesHit.isEmpty())
         {
             for (Entity entity : entitiesHit)
             {
                 if (entity instanceof LivingEntity)
                 {
-                    if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                    if (regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
                     {
                         LivingEntity livingEntity = (LivingEntity) entity;
 
                         // do something to each entity
                         livingEntity.setFireTicks(3 * 20);
-                        livingEntity.damage(12, player);
+                        livingEntity.damage(12, caster);
                     }
                 }
             }
         }
     }
 
-    private void spawnFireball(Player player, Location location, Vector direction, double stepSize)
+    private void spawnFireball(LivingEntity caster, Location location, Vector direction, double stepSize)
     {
         double spacing = 0.1;
         double start = -0.1;
@@ -244,7 +256,7 @@ public class Fireball extends Ability
             for (double jj = start; jj <= end; jj+=spacing)
                 for (double kk = start; kk <= end; kk+=spacing)
                 {
-                    player.getWorld().spawnParticle(Particle.FLAME, location.clone().add(ii,jj,kk),0, x,y,z, stepSize);
+                    caster.getWorld().spawnParticle(Particle.FLAME, location.clone().add(ii,jj,kk),0, x,y,z, stepSize);
                 }
     }
 }

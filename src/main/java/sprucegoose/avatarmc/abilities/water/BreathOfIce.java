@@ -46,7 +46,7 @@ public class BreathOfIce extends WaterAbility
             if (!onCooldown(player))
             {
                 addCooldown(player, mainItem);
-                doAbility(plugin, player);
+                doAbility(player);
             }
         }
         else if (AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
@@ -56,7 +56,7 @@ public class BreathOfIce extends WaterAbility
             if (!onCooldown(player))
             {
                 addCooldown(player, offHandItem);
-                doAbility(plugin, player);
+                doAbility(player);
             }
         }
     }
@@ -68,7 +68,14 @@ public class BreathOfIce extends WaterAbility
         return getAbilityItem(plugin, player, lore, 2);
     }
 
-    private void doAbility(JavaPlugin plugin, Player player)
+
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
+    {
+        doAbility(caster);
+    }
+
+    private void doAbility(LivingEntity caster)
     {
         // Constants
         final double range = 7;
@@ -87,13 +94,14 @@ public class BreathOfIce extends WaterAbility
         final HashSet<UUID> lastScan = new HashSet<>();
         final HashSet<UUID> thisScan = new HashSet<>();
 
+
         BukkitRunnable breathTask = new BukkitRunnable()
         {
             @Override
             public void run()
             {
-
-                if (!player.isSneaking() || !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+                if ((caster instanceof Player player && !player.isSneaking()) ||
+                        !regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
                 {
                     if(!this.isCancelled())
                     {
@@ -102,10 +110,10 @@ public class BreathOfIce extends WaterAbility
                     return;
                 }
 
-                Location playerLoc = player.getEyeLocation();
+                Location playerLoc = caster.getEyeLocation();
                 //get all mobs in radius
                 Collection<Entity> nearbyEntities = playerLoc.getWorld().getNearbyEntities(playerLoc, range, range, range);
-                nearbyEntities.remove(player);
+                nearbyEntities.remove(caster);
 
                 // assign thisScan to lastScan and clear lastScan
                 lastScan.clear();
@@ -117,7 +125,7 @@ public class BreathOfIce extends WaterAbility
                 {
                     if (entity instanceof LivingEntity lEntity )
                     {
-                        if (!regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+                        if (!regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
                         {
                             if (!this.isCancelled())
                             {
@@ -130,7 +138,7 @@ public class BreathOfIce extends WaterAbility
                         thisScan.add(entityID);
 
                         // make the angle more forgiving when the target is close to the player
-                        double distance = player.getLocation().distance(lEntity.getLocation());
+                        double distance = caster.getLocation().distance(lEntity.getLocation());
                         double effectiveSpreadAngle;
                         if (distance < 3.0 )
                             effectiveSpreadAngle = ((spreadAngle - (Math.PI/2.0)) * distance/3.0) + (Math.PI/2.0);
@@ -138,7 +146,7 @@ public class BreathOfIce extends WaterAbility
                             effectiveSpreadAngle = spreadAngle;
 
                         // Only affect entities within the breath attack
-                        if (entityInSpread(player, lEntity, effectiveSpreadAngle)) // TO DO: and check line of sight
+                        if (entityInSpread(caster, lEntity, effectiveSpreadAngle)) // TO DO: and check line of sight
                         {
                             if (!taggedEntityList.containsKey(entityID) || !lastScan.contains(entityID)) // TO DO: or is frozen
                             {
@@ -165,11 +173,11 @@ public class BreathOfIce extends WaterAbility
                 }
 
                 // Do breath animation
-                generateFrostParticle(player, 0, 0, 1);
-                generateFrostParticle(player, 0, -angleSpreadDeg, 1);
-                generateFrostParticle(player, 0, angleSpreadDeg, 1);
-                generateFrostParticle(player, angleSpreadDeg, 0, 1);
-                generateFrostParticle(player, -angleSpreadDeg, 0, 1);
+                generateFrostParticle(caster, 0, 0, 1);
+                generateFrostParticle(caster, 0, -angleSpreadDeg, 1);
+                generateFrostParticle(caster, 0, angleSpreadDeg, 1);
+                generateFrostParticle(caster, angleSpreadDeg, 0, 1);
+                generateFrostParticle(caster, -angleSpreadDeg, 0, 1);
 
             }
         };
@@ -190,16 +198,16 @@ public class BreathOfIce extends WaterAbility
     }
 
 
-    private void generateFrostParticle(Player player, float pitch, float yaw, double speed)
+    private void generateFrostParticle(LivingEntity caster, float pitch, float yaw, double speed)
     {
-        Location playerLoc = player.getEyeLocation();
+        Location playerLoc = caster.getEyeLocation();
         Location animationLocation = playerLoc.clone();
         animationLocation.setYaw(animationLocation.getYaw() + yaw);
         animationLocation.setPitch(animationLocation.getPitch() + pitch);
         animationLocation.add(animationLocation.getDirection().normalize());
         Vector animationVector2 = animationLocation.getDirection().normalize();
 
-        player.getWorld().spawnParticle(
+        caster.getWorld().spawnParticle(
                 Particle.SPIT,
                 animationLocation,
                 0,
@@ -209,11 +217,11 @@ public class BreathOfIce extends WaterAbility
                 speed);
     }
 
-    private boolean entityInSpread(Player player, LivingEntity entity, double spreadAngle)
+    private boolean entityInSpread(LivingEntity caster, LivingEntity entity, double spreadAngle)
     {
         // get angle representing how accurately player is looking at entity
         Location target = entity.getLocation();
-        Location source = player.getEyeLocation();
+        Location source = caster.getEyeLocation();
         Vector inBetween = target.clone().subtract(source).toVector();
         Vector forward = source.getDirection();
         double angle = forward.angle(inBetween);
