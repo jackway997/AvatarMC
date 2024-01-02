@@ -96,6 +96,7 @@ public class Stasis extends Ability implements Listener
             return false;
         }
 
+
         double distance = player.getEyeLocation().distance(target.getLocation());
         Location previousLoc = target.getLocation();
         BukkitRunnable abilityTask = new BukkitRunnable()
@@ -147,6 +148,7 @@ public class Stasis extends Ability implements Listener
                     return;
                 }
 
+                regProtManager.tagEntity(target, player);
                 target.teleport(stepLocation);
                 target.setVelocity(new Vector(0,0,0));
 

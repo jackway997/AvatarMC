@@ -260,6 +260,7 @@ public class ShockWave extends Ability implements Listener
                         (EntityUtil.getTimeElapsedEntityMeta(entity, shockTimeKey) < 0)) &&
                         regProtManager.isLocationPVPEnabled(caster, livingEntity.getLocation()))
                 {
+                    regProtManager.tagEntity(livingEntity, caster);
                     livingEntity.damage(8, caster);
                     livingEntity.setVelocity(new Vector(0,1,0).multiply(1));
                     livingEntity.setNoDamageTicks(8);

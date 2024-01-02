@@ -148,8 +148,10 @@ public class BreathOfIce extends WaterAbility
                         // Only affect entities within the breath attack
                         if (entityInSpread(caster, lEntity, effectiveSpreadAngle)) // TO DO: and check line of sight
                         {
+                            regProtManager.tagEntity(lEntity, caster);
                             if (!taggedEntityList.containsKey(entityID) || !lastScan.contains(entityID)) // TO DO: or is frozen
                             {
+
                                 taggedEntityList.put(entityID, 0); // reset ticks if not caught in breath
                             } else
                             {

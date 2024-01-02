@@ -254,10 +254,11 @@ public class BoulderToss extends Ability
         double fixedDamage = 5.0; // Adjust this value to set the amount of damage
 
         for (Entity entity : nearbyEntities) {
-            if (entity instanceof LivingEntity) {
+            if (entity instanceof LivingEntity le) {
                 if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
                 {
                     // Apply the fixed damage to the entity
+                    regProtManager.tagEntity(le, player);
                     ((LivingEntity) entity).damage(fixedDamage);
                 }
 

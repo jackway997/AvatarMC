@@ -192,6 +192,7 @@ public class MeteorStrike extends Ability implements Listener
                                 regProtManager.isLocationPVPEnabled(player, livingEntity.getLocation()))
                             {
                                 // do something to each entity
+                                regProtManager.tagEntity(livingEntity, player);
                                 livingEntity.setFireTicks(3 * 20);
                                 livingEntity.damage(15, player);
                             }

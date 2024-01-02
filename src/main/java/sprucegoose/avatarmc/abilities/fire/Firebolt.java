@@ -130,6 +130,7 @@ public class Firebolt extends Ability
                                         LivingEntity livingEntity = (LivingEntity) entity;
 
                                         // do something to each entity
+                                        regProtManager.tagEntity(livingEntity, caster);
                                         livingEntity.setFireTicks(3 * 20);
                                         livingEntity.damage(6, caster);
                                         entity.getWorld().spawnParticle(Particle.CRIT_MAGIC,

@@ -112,6 +112,9 @@ public class EarthPrison extends Ability
         {
             buildPrisonPillar(loc,6);
         }
+
+        regProtManager.tagEntity(target, player);
+
         return true;
     }
 

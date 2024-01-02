@@ -72,7 +72,13 @@ public class AbilityManager implements Listener
         registerAbility(new IceBlade(plugin, regProtManager, waterEffects));
         registerAbility(new FlowAsWater(plugin, regProtManager, waterEffects));
         registerAbility(new Stasis(plugin, regProtManager));
-        registerAbility(new Heal(plugin, regProtManager));
+        registerAbility(new Cyclone(plugin, regProtManager));
+        registerAbility(new RockSmashing(plugin, regProtManager));
+        registerAbility(new RockSolid(plugin, regProtManager));
+        registerAbility(new Enchant(plugin, regProtManager));
+        registerAbility(new CryoFreeze(plugin, regProtManager));
+        registerAbility(new FreezeAura(plugin, regProtManager));
+        registerAbility(new WaterWhip(plugin, regProtManager));
     }
 
     private void registerAbility(Ability ability)
