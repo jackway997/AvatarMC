@@ -104,6 +104,24 @@ public class AbilityStorage
         }
     }
 
+    public void removeAllAbilities(final UUID uuid, final boolean async)
+    {
+        this.PLAYER_ABILITIES.remove(uuid);
+
+        // Remove entries from database
+        try (ResultSet rs = db.readQuery("SELECT * FROM player_abilities WHERE uuid = '" + uuid.toString() +"';")) {
+            if (rs.next()) {
+                String playerName = plugin.getServer().getOfflinePlayer(uuid).getName();
+                db.modifyQuery("DELETE FROM player_abilities WHERE uuid = '" + uuid +"';", async);
+                logger.info(playerName +" unlearnt all abilities.");
+            } else {
+                logger.warning("Tried to remove all abilities from player with uuid="+ uuid.toString() +", but they didn't have any!");
+            }
+        } catch (final SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void unload(final UUID uuid) {
         this.PLAYER_ABILITIES.remove(uuid);
     }

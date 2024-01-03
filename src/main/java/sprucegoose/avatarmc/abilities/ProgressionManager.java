@@ -1,23 +1,34 @@
 package sprucegoose.avatarmc.abilities;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.storage.ProgressionStorage;
 
-public class ProgressionManager {
+public class ProgressionManager implements Listener {
 
-    public enum BENDER_TYPE{air, water, earth, fire, avatar}
-
+    public enum BENDER_TYPE{air, water, earth, fire, avatar, none}
     private final JavaPlugin plugin;
     private final ProgressionStorage progressionStorage;
+    private AbilityManager abilityManager;
 
-    public ProgressionManager(JavaPlugin plugin, ProgressionStorage progressionStorage) {
+    public ProgressionManager(JavaPlugin plugin, ProgressionStorage progressionStorage/*, AbilityManager abilityManager*/)
+    {
         this.plugin = plugin;
         this.progressionStorage = progressionStorage;
+        //this.abilityManager = abilityManager;
     }
+
+    public void setAbilityManager(AbilityManager abilityManager)
+    {
+        this.abilityManager = abilityManager;
+    }
+
+    private long[] expLevels = {1, 500, 2000, 10000};
 
     public static BENDER_TYPE stringToBenderType(String input)
     {
@@ -28,12 +39,29 @@ public class ProgressionManager {
                 case "earth" -> BENDER_TYPE.earth;
                 case "fire" -> BENDER_TYPE.fire;
                 case "avatar" -> BENDER_TYPE.avatar;
+                case "none" -> BENDER_TYPE.none;
                 default -> null;
             };
         } else return null;
-
     }
 
+    public static ChatColor getElementColor(BENDER_TYPE type)
+    {
+        return Ability.getElementColor(getAbilityElement(type));
+    }
+
+    private static Ability.ELEMENT_TYPE getAbilityElement(BENDER_TYPE type)
+    {
+        if (type != null) {
+            return switch (type) {
+                case air -> Ability.ELEMENT_TYPE.air;
+                case water -> Ability.ELEMENT_TYPE.water;
+                case earth -> Ability.ELEMENT_TYPE.earth;
+                case fire -> Ability.ELEMENT_TYPE.fire;
+                default -> null;
+            };
+        } else return null;
+    }
     public String getBenderTypeStringList()
     {
         StringBuilder output = new StringBuilder("[");
@@ -55,6 +83,7 @@ public class ProgressionManager {
     @EventHandler
     public void onPlayerLeaveEvent(PlayerQuitEvent e)
     {
+        plugin.getLogger().info("player leave event");
         this.progressionStorage.unload(e.getPlayer().getUniqueId());
     }
 
@@ -76,17 +105,38 @@ public class ProgressionManager {
         return false;
     }
 
+    public boolean reassignBenderType(Player player, BENDER_TYPE type)
+    {
+        BENDER_TYPE currentType = getBenderType(player);
+        long newExp = getExp(player);
+
+        if(currentType == type)
+        {
+            plugin.getLogger().info("can't reassign type to player that already has that bending type");
+            return false;
+        }
+
+        if (currentType != null && currentType != BENDER_TYPE.none && newExp != 0 )
+        {
+            // half the players exp when they
+            newExp = newExp / 2L;
+
+        }
+        if (newExp <= 1)
+        {
+            newExp = 1;
+        }
+
+        setBenderType(player, type);
+        setExp(player, newExp);
+        abilityManager.removeAllAbilities(player);
+        return true;
+    }
+
     public boolean setBenderType(Player player, BENDER_TYPE type)
     {
-        for(BENDER_TYPE benderType : BENDER_TYPE.values() )
-        {
-            if (type.equals(benderType))
-            {
-                progressionStorage.setBenderType(player.getUniqueId(), type.name(), false);
-                return true;
-            }
-        }
-        return false;
+        progressionStorage.setBenderType(player.getUniqueId(), type.name(), false);
+        return true;
     }
 
     public void removeBenderType(Player player)
@@ -94,4 +144,28 @@ public class ProgressionManager {
         progressionStorage.removeBenderType(player.getUniqueId(), false);
     }
 
+    public void addExp(Player player, long exp)
+    {
+        progressionStorage.addExp(player.getUniqueId(), exp);
+    }
+
+    public void setExp(Player player, long exp)
+    {
+        progressionStorage.setExp(player.getUniqueId(), exp);
+    }
+
+    public Long getExp(Player player)
+    {
+        return progressionStorage.getExp(player.getUniqueId());
+    }
+
+    public Ability.ABILITY_LEVEL getBenderLevel(Player player)
+    {
+        long exp = progressionStorage.getExp(player.getUniqueId());
+
+        if      (exp >= expLevels[3]) return Ability.ABILITY_LEVEL.master;
+        else if (exp >= expLevels[2]) return Ability.ABILITY_LEVEL.expert;
+        else if (exp >= expLevels[1]) return Ability.ABILITY_LEVEL.adept;
+        else return Ability.ABILITY_LEVEL.beginner;
+    }
 }

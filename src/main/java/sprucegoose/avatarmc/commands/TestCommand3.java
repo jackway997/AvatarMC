@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import sprucegoose.avatarmc.abilities.Ability;
 import sprucegoose.avatarmc.abilities.AbilityManager;
+import sprucegoose.avatarmc.abilities.ProgressionManager;
 import sprucegoose.avatarmc.abilities.water.WaterEffects;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 
@@ -19,33 +20,32 @@ import javax.swing.plaf.synth.Region;
 public class TestCommand3 implements CommandExecutor
 {
     JavaPlugin plugin;
-    RegionProtectionManager regionProtectionManager;
-    public TestCommand3(JavaPlugin plugin, RegionProtectionManager regionProtectionManager)
+    ProgressionManager progressionManager;
+    public TestCommand3(JavaPlugin plugin, ProgressionManager progressionManager)
     {
         this.plugin = plugin;
-        this.regionProtectionManager = regionProtectionManager;
+        this.progressionManager = progressionManager;
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String s, String[] strings)
-    {
-        Player player;
-        if(strings.length == 1)
-        {
-            player = plugin.getServer().getPlayer(strings[0]);
-        }
-        else if (sender instanceof Player)
-        {
-            player = (Player)sender;
-        }
-        else
-        {
-            sender.sendMessage("Invalid use of command");
+    public boolean onCommand(CommandSender sender, Command command, String s, String[] strings) {
+        long newExp;
+        if (strings.length == 1) {
+            newExp = Long.parseLong(strings[0]);
+        } else {
+            plugin.getLogger().info("Invalid use of command");
             return true;
         }
-        regionProtectionManager.tagEntity(player, player);
-        plugin.getLogger().info("Tagging player as player");
 
+        if (sender instanceof Player player)
+        {
+            plugin.getLogger().info("pre player exp: " + String.valueOf(progressionManager.getExp(player)));
+            progressionManager.addExp(player, newExp);
+            plugin.getLogger().info("post player exp: " + String.valueOf(progressionManager.getExp(player)));
+        }
+        else {
+            plugin.getLogger().info("Invalid use of command");
+        }
         return true;
     }
 }
