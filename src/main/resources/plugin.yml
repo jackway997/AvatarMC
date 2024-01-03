@@ -7,9 +7,11 @@ commands:
   test:
     description: Test Command for AvatarMC plugin.
     usage: /<command>
-  test2:
-    description: Test 2 Command for AvatarMC plugin.
+  skills:
+    description: Open the skills menu
     usage: /<command>
+    aliases:
+      test2
   give_ability:
     description: teaches player ability
     usage: /<command> ability_name
@@ -30,4 +32,7 @@ commands:
     usage: /<command> [player_name]
   test3:
     description: Test 3 Command for AvatarMC plugin.
+    usage: /<command>
+  test4:
+    description: Test 4 Command for AvatarMC plugin.
     usage: /<command>
