@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import sprucegoose.avatarmc.storage.ProgressionStorage;
 
 public class ProgressionManager implements Listener {
@@ -146,7 +147,59 @@ public class ProgressionManager implements Listener {
 
     public void addExp(Player player, long exp)
     {
-        progressionStorage.addExp(player.getUniqueId(), exp);
+        BENDER_TYPE type = getBenderType(player);
+        if (type != null && type != BENDER_TYPE.none)
+        {
+            player.sendMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + "You gained " + exp + " bending exp!");
+            checkLevelUp(player, exp);
+            progressionStorage.addExp(player.getUniqueId(), exp);
+
+        }
+    }
+
+    private boolean checkLevelUp(Player player, long exp)
+    {
+        Ability.ABILITY_LEVEL level = getBenderLevel(player);
+        long currExp = getExp(player);
+        if (level == Ability.ABILITY_LEVEL.master)
+        {
+            return false;
+        }
+        int index = level.ordinal();
+        long expGoal = expLevels[index+1];
+        if (currExp + exp >= expGoal) // if the player has levelled up
+        {
+            BENDER_TYPE type = getBenderType(player);
+
+            // assume type not none or null
+            if (type == BENDER_TYPE.avatar) {
+                player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Congratulations, you levelled up to " +
+                        Ability.ABILITY_LEVEL.values()[index + 1] + " " + getBenderType(player) +"!");
+            }
+            else
+            {
+                player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Congratulations, you levelled up to " +
+                        Ability.ABILITY_LEVEL.values()[index + 1] + " " + getBenderType(player) +" bender!");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private String getExpProgressionStr(@NotNull Player player)
+    {
+        long exp = getExp(player);
+        Ability.ABILITY_LEVEL level = getBenderLevel(player);
+        int index = level.ordinal();
+        if (level != Ability.ABILITY_LEVEL.master)
+        {
+            long expGoal = expLevels[index+1];
+            return level + " ["+ exp +"/"+ expGoal +"]";
+        }
+        else
+        {
+            return level + " ["+ exp + "]";
+        }
     }
 
     public void setExp(Player player, long exp)

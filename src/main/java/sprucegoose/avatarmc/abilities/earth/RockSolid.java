@@ -44,7 +44,7 @@ Notes: bugs: when you toss the same block multiple times, sometimes the
          super(plugin, regProtManager, ELEMENT_TYPE.earth, ABILITY_LEVEL.adept);
          setCooldown(3000);
      }
-
+/*
      public void rockAura(Player p) {
          ArmorStand missile = (ArmorStand) p.getWorld().spawnEntity(p.getLocation().add(0, -3, 0), EntityType.ARMOR_STAND);
 
@@ -147,7 +147,7 @@ Notes: bugs: when you toss the same block multiple times, sometimes the
          }
      }
 
-
+*/
          public ItemStack getAbilityItem (JavaPlugin plugin, Player player)
          {
              ArrayList<String> lore = new ArrayList<String>();

@@ -55,7 +55,7 @@ public final class AvatarMC extends JavaPlugin
         getCommand("mob_use_hostile_ability").setExecutor(new MobUseHostileAbilityCommand(this, abilityManager));
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
-        getCommand("test3").setExecutor(new TestCommand3(this, progressionManager));
+        getCommand("give_player_exp").setExecutor(new GivePlayerExp(this, progressionManager));
         getCommand("test4").setExecutor(new TestCommand4(this, progressionManager));
 
         // Register ability listeners
