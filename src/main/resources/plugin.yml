@@ -2,7 +2,7 @@ name: AvatarMC
 version: '${project.version}'
 main: sprucegoose.avatarmc.AvatarMC
 api-version: 1.19
-depend: [WorldGuard, Factions, PvPManager]
+depend: [WorldGuard, Factions, PvPManager, TitleManager]
 commands:
   test:
     description: Test Command for AvatarMC plugin.
@@ -30,9 +30,9 @@ commands:
   remove_bender:
     description: Removes bending from player
     usage: /<command> [player_name]
-  test3:
-    description: Test 3 Command for AvatarMC plugin.
-    usage: /<command>
+  give_player_exp:
+    description: Command to grant player bending exp.
+    usage: /<command> [player_name] exp
   test4:
     description: Test 4 Command for AvatarMC plugin.
     usage: /<command>
