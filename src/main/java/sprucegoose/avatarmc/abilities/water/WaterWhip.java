@@ -51,19 +51,35 @@ public class WaterWhip extends Ability implements Listener
                 !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)*/
         ) {
             addCooldown(player, item);
-            waterWhip(player);
+            waterWhipAsPlayer(player);
+            e.setCancelled(true);
 
 
         }
     }
-    public boolean waterWhip(Player p) { //player p comes from the interact event player
+
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
+    {
+        Vector direction = target.getLocation().clone().subtract(caster.getLocation().clone()).toVector().normalize();
+        waterWhip(caster, direction);
+    }
+
+    public void waterWhipAsPlayer(Player caster)
+    {
+        Vector direction = caster.getEyeLocation().getDirection().normalize();
+        waterWhip(caster, direction);
+    }
 
 
+    public boolean waterWhip(LivingEntity caster, Vector direction) { //player p comes from the interact event player
+
+            plugin.getLogger().info("water whip called");
 
 
-                Location eyeLocation = p.getLocation();
-                Location playerLocation = getFireLoc(p);
-                final Vector direction = p.getEyeLocation().getDirection().normalize();
+                Location eyeLocation = caster.getLocation();
+                Location playerLocation = getFireLoc(caster);
+
 
                 Particle particleType = Particle.WATER_DROP;
                 int particleCount = 30;
@@ -126,11 +142,11 @@ public class WaterWhip extends Ability implements Listener
                         Collection<Entity> nearbyEntities = rayLoc.getWorld().getNearbyEntities(rayLoc, 0.65, 1, 0.65);
 
                         for (Entity entity : nearbyEntities) {
-                            if (entity != null && entity != p && entity instanceof LivingEntity le && p.hasLineOfSight(entity)) {
+                            if (entity != null && entity != caster && entity instanceof LivingEntity le && caster.hasLineOfSight(entity)) {
 
 
                                 le.sendMessage("you have been hit by a water whip");
-                                p.sendMessage("you have hit " + le);
+                                caster.sendMessage("you have hit " + le);
                                 le.damage(10);
                                 le.setMetadata("entityHit", new FixedMetadataValue(plugin, true));
                                 //delete the last particle and somehow cancel the particles from spawning
@@ -150,7 +166,7 @@ public class WaterWhip extends Ability implements Listener
 
 
 
-    public Location getFireLoc(Player player) {
+    public Location getFireLoc(LivingEntity player) {
         double sideScaleFactor = 0.55;
         double fireDownScaleFactor = 0.25;
 
