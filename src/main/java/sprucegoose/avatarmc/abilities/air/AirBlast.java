@@ -48,38 +48,44 @@ public class AirBlast extends Ability implements Listener
                 PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer()) && !onCooldown(player)
             )
         {
-            if (airBlast(player)) {
+            if (doAbilityAsPlayer(player)) {
                 addCooldown(player, item);
             }
             e.setCancelled(true);
         }
     }
 
-    private boolean airBlast(Player player)
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
     {
-        double maxRange = 8.0; // Adjust the maximum range as desired
+        airBlast(caster, target);
+    }
+
+    public boolean doAbilityAsPlayer(Player player)
+    {
+        LivingEntity target = AbilityUtil.getHostileLOS(player,8, 0.5);
+        return airBlast(player, target);
+    }
+
+    private boolean airBlast(LivingEntity caster, LivingEntity target)
+    {
         double knockbackStrength = 3; // Adjust the knockback strength as needed
         double damage = 2;
 
-        Location location = player.getEyeLocation();
+        Location location = caster.getEyeLocation();
         Vector direction = location.getDirection().normalize();
 
-        double stepSize = 0.1;
-        double distance = 0.0;
-
-        LivingEntity target = AbilityUtil.getHostileLOS(player,8, 0.5);
-
-        if (target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
-                        !regProtManager.isLocationPVPEnabled(player, target.getLocation()))
+        if (target == null || !regProtManager.isLocationPVPEnabled(caster, caster.getLocation()) ||
+                        !regProtManager.isLocationPVPEnabled(caster, target.getLocation()))
         {
             return false;
         }
 
-        player.getWorld().playSound(player.getLocation().add(direction), Sound.BLOCK_FIRE_EXTINGUISH, 10f, 0.7f);
-        player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, player.getLocation().add(direction).add(0,1,0), 25);
+        caster.getWorld().playSound(caster.getLocation().add(direction), Sound.BLOCK_FIRE_EXTINGUISH, 10f, 0.7f);
+        caster.getWorld().spawnParticle(Particle.SMOKE_NORMAL, caster.getLocation().add(direction).add(0,1,0), 25);
 
         target.damage(damage); // Adjust the damage as needed
-        regProtManager.tagEntity(target, player);
+        regProtManager.tagEntity(target, caster);
 
         Location hitLocation = target.getLocation();
         hitLocation.getWorld().spawnParticle(Particle.SMOKE_NORMAL, hitLocation, 25);

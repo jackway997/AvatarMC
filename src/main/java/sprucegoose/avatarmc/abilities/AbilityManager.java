@@ -1,6 +1,9 @@
 package sprucegoose.avatarmc.abilities;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -155,6 +158,25 @@ public class AbilityManager implements Listener
                 player.getWorld().dropItem(player.getLocation(), item);
             }
             return true;
+        }
+        else return false;
+    }
+
+    public boolean dropAbilityBook(LivingEntity entity, String ability)
+    {
+        if (abilityMatrix.containsKey(ability))
+        {
+            Ability abilityObject = abilityMatrix.get(ability);
+            World world = Bukkit.getServer().getWorld("world"); // look into a better way to do this, searching by entity UUID returns null
+            if(world != null)
+            {
+                world.dropItemNaturally(entity.getLocation(), abilityObject.getSkillBookItem(plugin));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else return false;
     }

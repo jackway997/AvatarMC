@@ -27,7 +27,6 @@ public class Cyclone extends Ability implements Listener {
         super(plugin, regProtManager, ELEMENT_TYPE.air, ABILITY_LEVEL.master);
         setCooldown(10000);
     }
-
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e) {
         EquipmentSlot slot = e.getHand();
@@ -40,15 +39,22 @@ public class Cyclone extends Ability implements Listener {
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
                 AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
                 PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer()) && !onCooldown(player)
-        ) {
+        )
+        {
             addCooldown(player, item);
-            Missile missile = new Missile(player);
             e.setCancelled(true);
-            BukkitRunnable task1 = new BukkitRunnable() {
+            doAbility(player);
+        }
+    }
 
+    private boolean doAbility(LivingEntity caster)
+    {
+        if (regProtManager.isLocationPVPEnabled(caster, caster.getLocation())) {
+            plugin.getLogger().info("casting cyclone");
+            Missile missile = new Missile(caster);
+            BukkitRunnable task1 = new BukkitRunnable() {
                 @Override
                 public void run() {
-
 
                     missile.spawnMissile();
 
@@ -60,7 +66,6 @@ public class Cyclone extends Ability implements Listener {
                 @Override
                 public void run() {
 
-
                     task1.cancel();
                 }
             };
@@ -69,28 +74,37 @@ public class Cyclone extends Ability implements Listener {
             BukkitRunnable task3 = new BukkitRunnable() {
                 @Override
                 public void run() {
-
                     missile.removeMissle();
                 }
             };
-            task3.runTaskLater(plugin, 400);
+            task3.runTaskLater(plugin, 200);
+            return true;
+        }
+        else
+        {
+            plugin.getLogger().info("cyclone in protected region");
+            return false;
         }
 
     }
 
-
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
+    {
+        doAbility(caster);
+    }
 
 
     public class Missile {
         private Set<ArmorStand> missileSet;
 
-        private Player p;
+        private LivingEntity caster;
 
 
         public void spawnMissile() {
 
             Material[] materials = {Material.FEATHER, Material.STRING, Material.IRON_NUGGET, Material.GRASS};
-            ArmorStand missile = (ArmorStand) p.getWorld().spawnEntity(p.getLocation().add(0, -3, 0), EntityType.ARMOR_STAND);
+            ArmorStand missile = (ArmorStand) caster.getWorld().spawnEntity(caster.getLocation().add(0, -3, 0), EntityType.ARMOR_STAND);
 
             missile.setCustomName("Missile");
             missile.setArms(true);
@@ -106,8 +120,8 @@ public class Cyclone extends Ability implements Listener {
 
             missileSet.add(missile);
 
-            BukkitRunnable task4 = new BukkitRunnable() {
-
+            BukkitRunnable task4 = new BukkitRunnable()
+            {
                 double radius = 5; // Set your desired radius for the circle
                 double speed = 0.4; // Adjust the speed of circling as needed
                 double angle = 0.0; // Initialize the angle
@@ -115,51 +129,61 @@ public class Cyclone extends Ability implements Listener {
 
                 double randomY = -1 + (random.nextDouble() * 4); // Generate random Y between -1 and 1
 
-
                 @Override
                 public void run() {
                     EulerAngle rot = missile.getRightArmPose();
                     EulerAngle rotnew = rot.add(0.1, 0.1, 0);
                     missile.setRightArmPose(rotnew);
-                    double x = p.getLocation().getX() + (radius * Math.cos(angle));
-                    double z = p.getLocation().getZ() + (radius * Math.sin(angle));
+                    double x = caster.getLocation().getX() + (radius * Math.cos(angle));
+                    double z = caster.getLocation().getZ() + (radius * Math.sin(angle));
 
-                    missile.teleport(new Location(p.getWorld(), x, p.getLocation().getY() + randomY, z));
+                    missile.teleport(new Location(caster.getWorld(), x, caster.getLocation().getY() + randomY, z));
                     angle += speed;
                     if (angle >= 2 * Math.PI) {
                         angle = 0.0;
                     }
-                    if (!missile.isDead() && p.isOnline()) {
-                        Collection<Entity> nearbyEntities = p.getWorld().getNearbyEntities(p.getLocation(), 5.5, 2, 5.5);
-                        for (Entity entity : nearbyEntities) {
-                            if (entity != null && entity != p && entity instanceof LivingEntity le && p.hasLineOfSight(entity)) {
-                                le.damage(3);
-                                le.setVelocity(p.getLocation().getDirection().multiply(1));
+                    if (!missile.isDead() && !(caster instanceof Player p && !p.isOnline()))
+                    {
+                        Collection<Entity> nearbyEntities = caster.getWorld().getNearbyEntities(caster.getLocation(), 5.5, 2, 5.5);
+                        for (Entity entity : nearbyEntities)
+                        {
+                            if (entity != caster && entity instanceof LivingEntity le && caster.hasLineOfSight(entity))
+                            {
+                                if(regProtManager.isLocationPVPEnabled(caster, caster.getLocation()) &&
+                                        regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
+                                {
+                                    le.damage(3);
+                                    le.setVelocity(caster.getLocation().getDirection().multiply(1));
+                                }
+                                else
+                                {
+                                    plugin.getLogger().info("entity hit protected region");
+                                    removeMissle();
+                                }
                             }
                         }
                     }
 
-                    if (!p.isOnline()) {
+                    if (caster instanceof Player p && !p.isOnline()) {
                         removeMissle();
+                        if (!this.isCancelled())
+                        {
+                            this.cancel();
+                        }
                     }
-
-
                 }
             };
             task4.runTaskTimer(plugin, 0L, 1);
-
-
         }
 
-        public Missile(Player p) {
-            this.p = p;
+        public Missile(LivingEntity caster) {
+            this.caster = caster;
             this.missileSet = new HashSet<>();
             // this passes the player from the listener class to our private variable Player which we can use in line 18
-
-
         }
 
-        public void removeMissle() {
+        public void removeMissle()
+        {
             for (ArmorStand m : missileSet) {
                 m.remove();
             }

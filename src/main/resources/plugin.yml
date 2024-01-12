@@ -7,32 +7,46 @@ commands:
   test:
     description: Test Command for AvatarMC plugin.
     usage: /<command>
+    permission: avatarmc.test
   skills:
     description: Open the skills menu
     usage: /<command>
+    permission: avatarmc.general.skills
     aliases:
       test2
   give_ability:
     description: teaches player ability
     usage: /<command> ability_name
+    permission: avatarmc.admin.give_ability
   give_ability_book:
     description: gives player ability book
     usage: /<command> player_name ability_name source
+    permission: avatarmc.admin.give_ability_book
+  drop_ability_book:
+    description: drops an ability book at entities feet
+    usage: /<command> entity_uuid ability_name source
+    permission: avatarmc.system.drop_ability_book
   mob_use_hostile_ability:
     description: uses a hostile ability as a mob
     usage: /<command> casterID target_player ability
+    permission: avatarmc.system.mob_use_hostile_ability
   remove_ability:
     description: removes ability from player
     usage: /<command> ability_name
+    permission: avatarmc.admin.remove_ability
   set_bender:
     description: sets bending type for player
     usage: /<command> [player_name] ability_name
+    permission: avatarmc.admin.set_bender
   remove_bender:
     description: Removes bending from player
     usage: /<command> [player_name]
+    permission: avatarmc.admin.remove_bender
   give_player_exp:
     description: Command to grant player bending exp.
     usage: /<command> [player_name] exp
+    permission: avatarmc.admin.give_player_exp
   test4:
     description: Test 4 Command for AvatarMC plugin.
     usage: /<command>
+    permission: avatarmc.test

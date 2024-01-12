@@ -52,6 +52,7 @@ public final class AvatarMC extends JavaPlugin
         getCommand("remove_ability").setExecutor(new RemoveAbilityCommand(this, abilityManager));
         getCommand("give_ability").setExecutor(new GiveAbilityCommand(this, abilityManager));
         getCommand("give_ability_book").setExecutor(new GiveAbilityBookCommand(this, abilityManager));
+        getCommand("drop_ability_book").setExecutor(new DropAbilityBookCommand(this, abilityManager));
         getCommand("mob_use_hostile_ability").setExecutor(new MobUseHostileAbilityCommand(this, abilityManager));
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
@@ -74,5 +75,6 @@ public final class AvatarMC extends JavaPlugin
     public void onDisable()
     {
         // Plugin shutdown logic
+        progressionManager.onDisable();
     }
 }

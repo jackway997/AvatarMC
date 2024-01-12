@@ -38,7 +38,10 @@ public class GivePlayerExp implements CommandExecutor
         if (newExp != 0 && target != null)
         {
             progressionManager.addExp(target, newExp);
-            sender.sendMessage("you granted "+ target + " "+ newExp +" bending exp.");
+            if(sender instanceof Player)
+            {
+                sender.sendMessage("you granted " + target + " " + newExp + " bending exp.");
+            }
         }
         else {
             plugin.getLogger().info("Invalid use of command");
