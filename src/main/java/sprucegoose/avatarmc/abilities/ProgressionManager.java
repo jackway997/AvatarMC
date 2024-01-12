@@ -221,4 +221,9 @@ public class ProgressionManager implements Listener {
         else if (exp >= expLevels[1]) return Ability.ABILITY_LEVEL.adept;
         else return Ability.ABILITY_LEVEL.beginner;
     }
+
+    public void onDisable()
+    {
+        progressionStorage.unloadAll();
+    }
 }

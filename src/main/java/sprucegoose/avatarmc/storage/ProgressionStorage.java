@@ -216,7 +216,13 @@ public class ProgressionStorage
 
     }
 
-
+    public void unloadAll()
+    {
+        for(Map.Entry<UUID, Long> entry : PLAYER_EXP_DELTA.entrySet())
+        {
+            unload(entry.getKey());
+        }
+    }
 }
 
 
