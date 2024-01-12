@@ -225,5 +225,6 @@ public class ProgressionManager implements Listener {
     public void onDisable()
     {
         progressionStorage.unloadAll();
+
     }
 }

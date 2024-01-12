@@ -180,7 +180,7 @@ public class ProgressionStorage
             e.printStackTrace();
         }
     }
-
+  
     public void unload(final UUID uuid)
     {
         plugin.getLogger().info("Unloading player");
@@ -213,7 +213,6 @@ public class ProgressionStorage
         }
         this.PLAYER_EXP.remove(uuid);
         this.PLAYER_EXP_DELTA.remove(uuid);
-
     }
 
     public void unloadAll()
@@ -222,7 +221,10 @@ public class ProgressionStorage
         {
             unload(entry.getKey());
         }
+
     }
+
+
 }
 
 
