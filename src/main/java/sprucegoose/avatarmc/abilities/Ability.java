@@ -92,7 +92,12 @@ public abstract class Ability implements Listener {
 
     protected ChatColor getSkillTitleColor()
     {
-        return switch (element) {
+        return getElementColor(element);
+    }
+
+    public static ChatColor getElementColor(ELEMENT_TYPE element)
+    {
+        return switch(element) {
             case air -> ChatColor.GRAY;
             case earth -> ChatColor.DARK_GREEN;
             case fire -> ChatColor.RED;
@@ -149,6 +154,10 @@ public abstract class Ability implements Listener {
         return this.getClass().getSimpleName() + " Book";
     }
 
+    public ABILITY_LEVEL getLevel()
+    {
+        return level;
+    }
 
     public abstract ItemStack getAbilityItem(JavaPlugin plugin, Player player);
 

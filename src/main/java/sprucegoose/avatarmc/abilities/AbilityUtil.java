@@ -32,11 +32,11 @@ public class AbilityUtil
         return REPLACEABLE_BLOCK_TYPES.contains(block.getType());
     }
 
-    public static LivingEntity getHostileLOS(Player player, double range, double hitRadius)
+    public static LivingEntity getHostileLOS(LivingEntity caster, double range, double hitRadius)
     {
         double stepSize = 0.5;
 
-        Location eyeLocation = player.getEyeLocation();
+        Location eyeLocation = caster.getEyeLocation();
         Location currentLocation = eyeLocation.clone();
         Vector direction = currentLocation.getDirection().normalize().multiply(stepSize);
 
@@ -46,7 +46,7 @@ public class AbilityUtil
             currentLocation.add(direction); // check if this works with locations and not vectors
 
             Collection<Entity> entitiesHit = currentLocation.getWorld().getNearbyEntities(currentLocation, hitRadius, hitRadius, hitRadius);
-            entitiesHit.remove(player);
+            entitiesHit.remove(caster);
             if (!entitiesHit.isEmpty()) // if entity hit
             {
                 for (Entity entity : entitiesHit)

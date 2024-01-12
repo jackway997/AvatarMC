@@ -251,7 +251,7 @@ public class ShockWave extends Ability implements Listener
         }, 10L); // 1 second delay
 
         Location loc = block.getLocation();
-        for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1, 2, 1))
+        for (Entity entity : loc.getWorld().getNearbyEntities(loc, 2, 2, 2))
         {
             if (!(entity.getUniqueId() == caster.getUniqueId()))
             {
@@ -261,8 +261,8 @@ public class ShockWave extends Ability implements Listener
                         regProtManager.isLocationPVPEnabled(caster, livingEntity.getLocation()))
                 {
                     regProtManager.tagEntity(livingEntity, caster);
-                    livingEntity.damage(8, caster);
-                    livingEntity.setVelocity(new Vector(0,1,0).multiply(1));
+                    livingEntity.setVelocity(new Vector(0,1,0).multiply(1.3));
+                    livingEntity.damage(8);
                     livingEntity.setNoDamageTicks(8);
                     EntityUtil.setTimeStampedEntityMeta(plugin, shockTimeKey, livingEntity);
                 }

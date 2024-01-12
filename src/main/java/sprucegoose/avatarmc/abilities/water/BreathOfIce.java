@@ -79,7 +79,7 @@ public class BreathOfIce extends WaterAbility
     {
         // Constants
         final double range = 7;
-        final double spreadAngle = 0.35;
+        final double spreadAngle = 0.45;
         final float angleSpreadDeg = (float) (spreadAngle * 180 / Math.PI);
         final int chillDuration = 3;
         final long breathDuration = 5L * 20L;
@@ -144,6 +144,8 @@ public class BreathOfIce extends WaterAbility
                             effectiveSpreadAngle = ((spreadAngle - (Math.PI/2.0)) * distance/3.0) + (Math.PI/2.0);
                         else
                             effectiveSpreadAngle = spreadAngle;
+
+                        //plugin.getLogger().info("entity in spread ? "+ entityInSpread(caster, lEntity, effectiveSpreadAngle));
 
                         // Only affect entities within the breath attack
                         if (entityInSpread(caster, lEntity, effectiveSpreadAngle)) // TO DO: and check line of sight
@@ -227,7 +229,8 @@ public class BreathOfIce extends WaterAbility
         Vector inBetween = target.clone().subtract(source).toVector();
         Vector forward = source.getDirection();
         double angle = forward.angle(inBetween);
-
+        System.out.println("angle: ["+ angle +"/"+spreadAngle+"]");
+        System.out.println("satisfied: "+ (angle < spreadAngle));
         // TO DO: and check line of sight
         return angle < spreadAngle;
     }

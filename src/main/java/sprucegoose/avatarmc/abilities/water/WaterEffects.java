@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 // To do: cancel all player actions when frozen
+// Note: all timing should be done in ticks
 
 public class WaterEffects implements Listener
 {
@@ -46,7 +47,7 @@ public class WaterEffects implements Listener
         this.plugin = plugin;
     }
 
-    public void freezeEntity(LivingEntity entity, int duration)
+    public void freezeEntity(LivingEntity entity, int tickDuration) // in ticks
     {
         unChillEntity(entity);
         if (!entityIsFrozen(entity))
@@ -55,22 +56,22 @@ public class WaterEffects implements Listener
             //if ((EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) -
             //        Integer.ParseInt(EntityUtil.getEntityTag(entity, freezeDurationKey)) > duration)
             //    return;
-            startFreezeAnimation(entity, duration);
+            startFreezeAnimation(entity, tickDuration);
             EntityUtil.setTimeStampedEntityMeta(plugin, freezeTimeStampKey, entity);
-            EntityUtil.setEntityMeta(plugin, entity, freezeDurationKey, String.valueOf(duration));
+            EntityUtil.setEntityMeta(plugin, entity, freezeDurationKey, String.valueOf(tickDuration));
             EntityUtil.setEntityMeta(plugin, entity, freezeDamageKey, String.valueOf(0));
             if (entity instanceof Player player)
             {
-                freezePlayer(player, duration);
+                freezePlayer(player, tickDuration);
             }
             else
             {
-                freezeMob(entity, duration);
+                freezeMob(entity, tickDuration);
             }
         }
     }
 
-    private void freezePlayer(Player player, int duration)
+    private void freezePlayer(Player player, int tickDuration)
     {
         frozenPlayers.add(player.getUniqueId());
 
@@ -82,7 +83,7 @@ public class WaterEffects implements Listener
                 unfreezeEntity(player);
             }
         };
-        unFreezeTask.runTaskLater(plugin, duration);
+        unFreezeTask.runTaskLater(plugin, tickDuration);
     }
 
     private void freezeMob(LivingEntity entity, int duration)
@@ -129,13 +130,14 @@ public class WaterEffects implements Listener
 
         try
         {
-            System.out.println("elapsed time: "+ EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey));
-            System.out.println("duration: "+ Integer.parseInt(EntityUtil.getEntityTag(entity,freezeDurationKey)));
-            return EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) * 20 <=
-                    Integer.parseInt(EntityUtil.getEntityTag(entity,freezeDurationKey));
+            UUID entityID = entity.getUniqueId();
+            return (frozenMobs.containsKey(entityID) || frozenPlayers.contains(entityID)) &&
+                    (EntityUtil.getTimeElapsedEntityMeta(entity, freezeTimeStampKey) * 20 <=
+                    Integer.parseInt(EntityUtil.getEntityTag(entity,freezeDurationKey)));
         }
         catch (NumberFormatException e)
         {
+            plugin.getLogger().warning("number format exception generated from entityIsFrozen");
             return false;
         }
     }
@@ -189,6 +191,7 @@ public class WaterEffects implements Listener
         Player player = e.getPlayer();
         if (frozenPlayers.contains(player.getUniqueId()))
         {
+            plugin.getLogger().info("player frozen: "+ entityIsFrozen(player));
             if (entityIsFrozen(player))
             {
                 e.setCancelled(true);
@@ -218,7 +221,7 @@ public class WaterEffects implements Listener
     }
 
     // TO DO: add listener for player leave/death and cancel animation
-    private void startFreezeAnimation(LivingEntity entity, int duration)
+    private void startFreezeAnimation(LivingEntity entity, int tickDuration)
     {
         final int maxSteps = 30;
         int [] step = {1};
@@ -256,7 +259,7 @@ public class WaterEffects implements Listener
                 }
             }
         };
-        cancelTask.runTaskLater(plugin, duration);
+        cancelTask.runTaskLater(plugin, tickDuration);
     }
 
     @EventHandler

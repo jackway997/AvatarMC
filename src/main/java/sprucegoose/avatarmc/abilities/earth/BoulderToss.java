@@ -50,6 +50,8 @@ public class BoulderToss extends Ability
         setCooldown(1);
     }
 
+
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
@@ -89,18 +91,25 @@ public class BoulderToss extends Ability
         }
     }
 
-    private boolean createNewBoulder(Player player, Block block)
+    @Override
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
     {
-        UUID playerUUID = player.getUniqueId();
+        Block block = caster.getLocation().clone().add(0,-1,0).getBlock();
+        launchBlock(caster,block);
+    }
 
-        if (    !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
-                !regProtManager.isLocationPVPEnabled(player, block.getLocation()))
+    private boolean createNewBoulder(LivingEntity caster, Block block)
+    {
+        UUID playerUUID = caster.getUniqueId();
+
+        if (    !regProtManager.isLocationPVPEnabled(caster, caster.getLocation()) ||
+                !regProtManager.isLocationPVPEnabled(caster, block.getLocation()))
         {
             return false;
         }
 
         activeBends.putIfAbsent(playerUUID, 0);
-        if ((activeBends.get(playerUUID) < maxNumBends) && !onCooldown(player)) // If a cloned block doesn't exist for player
+        if ((activeBends.get(playerUUID) < maxNumBends)) // If a cloned block doesn't exist for player
         {
             if (isAllowedBlockType(block.getType())) // if block is of allowed type
             {
@@ -109,7 +118,7 @@ public class BoulderToss extends Ability
                 if (destinationBlock.getType() == Material.AIR && !BlockUtil.blockHasMeta(destinationBlock, blockDataKey))
                 {
                     // Clone the block
-                    cloneBlock(player, block);
+                    cloneBlock(caster, block);
                     return true;
                 }
                 else
@@ -151,10 +160,10 @@ public class BoulderToss extends Ability
         }
     }
 
-    private void cloneBlock(Player player, Block clickedBlock)
+    private void cloneBlock(LivingEntity caster, Block clickedBlock)
     {
         Block destinationBlock = clickedBlock.getLocation().add(0, 2, 0).getBlock();
-        UUID uuid = player.getUniqueId();
+        UUID uuid = caster.getUniqueId();
         //plugin.getLogger().info("Cloning block: " + clickedBlock.getType() + " at location: " + destinationBlock.getLocation());
         destinationBlock.setType(clickedBlock.getType());
         String bendTime = BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, destinationBlock);
@@ -163,7 +172,7 @@ public class BoulderToss extends Ability
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if(BlockUtil.blockHasMetaAtTime(destinationBlock, blockDataKey, bendTime))
             {
-                removeCloneBlock(player, destinationBlock);
+                removeCloneBlock(caster, destinationBlock);
             }
         }, 40L); // 2 seconds delay
 
@@ -171,30 +180,40 @@ public class BoulderToss extends Ability
         //System.out.println("count increased to " + activeBends.get(uuid));
     }
 
-    private void launchBlock(Player player, Block block)
+    private void launchBlock(LivingEntity caster, Block block)
     {
-        explosionOccurred.put(player.getUniqueId(), false);
+        explosionOccurred.put(caster.getUniqueId(), false);
 
         // Calculate direction
-        double pitch = Math.toRadians(player.getLocation().getPitch());
-        double yaw = Math.toRadians(player.getLocation().getYaw());
+        double pitch = Math.toRadians(caster.getLocation().getPitch());
+        double yaw = Math.toRadians(caster.getLocation().getYaw());
         double x = Math.sin(-yaw) * Math.cos(pitch);
         double y = Math.sin(-pitch);
         double z = Math.cos(-yaw) * Math.cos(pitch);
         Vector direction = new Vector(x, y, z).normalize();
         direction.multiply(2);
-        FallingBlock fallingBlock = block.getWorld().spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5), block.getBlockData());
-        BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, fallingBlock);
-        removeCloneBlock(player, block);
+
+        FallingBlock fallingBlock;
+
+        if(caster instanceof Player)
+        {
+            fallingBlock = block.getWorld().spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5), block.getBlockData());
+            removeCloneBlock(caster, block);
+        }
+        else
+        {
+            fallingBlock = block.getWorld().spawnFallingBlock(block.getLocation().clone().add(0.5,2,0.5),block.getBlockData());
+        }
+
         BlockUtil.setTimeStampedBlockMeta(plugin, blockDataKey, fallingBlock);
         fallingBlock.setDropItem(false); // Set the drop item property to false to prevent it from dropping items
         fallingBlock.setVelocity(direction);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> checkForCollision(fallingBlock, player), 1L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> checkForCollision(fallingBlock, caster), 1L);
     }
 
-    public void removeCloneBlock(Player player, Block block) {
-        UUID uuid = player.getUniqueId();
+    public void removeCloneBlock(LivingEntity caster, Block block) {
+        UUID uuid = caster.getUniqueId();
 
         if (block != null && BlockUtil.blockHasMeta(block, blockDataKey))
         {
@@ -204,42 +223,42 @@ public class BoulderToss extends Ability
         }
     }
 
-    public void checkForCollision(FallingBlock fallingBlock, Player player) {
+    public void checkForCollision(FallingBlock fallingBlock, LivingEntity caster) {
         Location blockLocation = fallingBlock.getLocation();
-        UUID uuid = player.getUniqueId();
+        UUID uuid = caster.getUniqueId();
         if (explosionOccurred.get(uuid)) {
             return;
         }
 
         if (fallingBlock.isOnGround() || fallingBlock.getVelocity().lengthSquared() < 0.7) {
             //plugin.getLogger().info("Collision detected with ground!");
-            customExplosion(blockLocation, 1.0f, player);
-            performCleanup(fallingBlock, blockLocation, player);
+            customExplosion(blockLocation, 1.0f, caster);
+            performCleanup(fallingBlock, blockLocation, caster);
         } else {
             List<Entity> nearbyEntities = fallingBlock.getNearbyEntities(0.5, 0.5, 0.5);
             for (Entity entity : nearbyEntities) {
                 if (entity instanceof LivingEntity && entity.getUniqueId() != uuid) {
                     //plugin.getLogger().info("Collision detected with entity: " + entity.getType());
-                    customExplosion(blockLocation, 1.0f, player); // Apply the explosion for entities
-                    performCleanup(fallingBlock, blockLocation, player);
+                    customExplosion(blockLocation, 1.0f, caster); // Apply the explosion for entities
+                    performCleanup(fallingBlock, blockLocation, caster);
                     return;
                 }
             }
             if (!explosionOccurred.get(uuid)) {
                 // Reschedule collision check
-                Bukkit.getScheduler().runTaskLater(plugin, () -> checkForCollision(fallingBlock, player), 1L);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> checkForCollision(fallingBlock, caster), 1L);
             }
         }
     }
 
-    private void performCleanup(FallingBlock fallingBlock, Location blockLocation, Player player) {
+    private void performCleanup(FallingBlock fallingBlock, Location blockLocation, LivingEntity caster) {
         fallingBlock.remove();
         //blockLocation.getBlock().setType(Material.AIR);
-        explosionOccurred.put(player.getUniqueId(), true);
+        explosionOccurred.put(caster.getUniqueId(), true);
     }
 
-    public void customExplosion(Location location, float power, Player player) {
-        if (explosionOccurred.get(player.getUniqueId())) {
+    public void customExplosion(Location location, float power, LivingEntity caster) {
+        if (explosionOccurred.get(caster.getUniqueId())) {
             return;
         }
         location.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, location, 25);
@@ -254,17 +273,17 @@ public class BoulderToss extends Ability
         double fixedDamage = 5.0; // Adjust this value to set the amount of damage
 
         for (Entity entity : nearbyEntities) {
-            if (entity instanceof LivingEntity le) {
-                if (regProtManager.isLocationPVPEnabled(player, entity.getLocation()))
+            if (entity instanceof LivingEntity le && entity.getUniqueId() != caster.getUniqueId())
+            {
+                if (regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
                 {
                     // Apply the fixed damage to the entity
-                    regProtManager.tagEntity(le, player);
+                    regProtManager.tagEntity(le, caster);
                     ((LivingEntity) entity).damage(fixedDamage);
                 }
-
             }
         }
-        explosionOccurred.put(player.getUniqueId(), true);
+        explosionOccurred.put(caster.getUniqueId(), true);
     }
 
     public boolean isAllowedBlockType(Material material) {

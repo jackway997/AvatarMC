@@ -42,20 +42,22 @@ public final class AvatarMC extends JavaPlugin
         progressionManager = new ProgressionManager(this, progressionStorage);
         abilityManager = new AbilityManager(this, abilityStorage, progressionManager, regionProtectionManager,
                 waterEffects);
-        skillMenuManager = new SkillMenu(this, abilityManager);
-
+        progressionManager.setAbilityManager(abilityManager); // dodgey, lowelle
+        skillMenuManager = new SkillMenu(this, abilityManager, progressionManager);
 
         // Plugin startup logic
         // Register commands
         getCommand("test").setExecutor(new TestCommand(this, abilityManager));
-        getCommand("test2").setExecutor(new TestCommand2(this, skillMenuManager));
+        getCommand("skills").setExecutor(new SkillsMenuCommand(this, skillMenuManager));
         getCommand("remove_ability").setExecutor(new RemoveAbilityCommand(this, abilityManager));
         getCommand("give_ability").setExecutor(new GiveAbilityCommand(this, abilityManager));
         getCommand("give_ability_book").setExecutor(new GiveAbilityBookCommand(this, abilityManager));
+        getCommand("drop_ability_book").setExecutor(new DropAbilityBookCommand(this, abilityManager));
         getCommand("mob_use_hostile_ability").setExecutor(new MobUseHostileAbilityCommand(this, abilityManager));
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
-        getCommand("test3").setExecutor(new TestCommand3(this, regionProtectionManager));
+        getCommand("give_player_exp").setExecutor(new GivePlayerExp(this, progressionManager));
+        getCommand("test4").setExecutor(new TestCommand4(this, progressionManager));
 
         // Register ability listeners
         for ( Ability ability : abilityManager.getAbilities())
@@ -63,14 +65,16 @@ public final class AvatarMC extends JavaPlugin
             getServer().getPluginManager().registerEvents(ability, this);
         }
         // Register Misc listeners
-        getServer().getPluginManager().registerEvents(new SkillMenu(this, abilityManager), this);
+        getServer().getPluginManager().registerEvents(skillMenuManager, this);
         getServer().getPluginManager().registerEvents(abilityManager, this);
         getServer().getPluginManager().registerEvents(waterEffects, this);
+        getServer().getPluginManager().registerEvents(progressionManager, this);
     }
 
     @Override
     public void onDisable()
     {
         // Plugin shutdown logic
+        progressionManager.onDisable();
     }
 }

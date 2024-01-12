@@ -1,6 +1,9 @@
 package sprucegoose.avatarmc.abilities;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -98,12 +101,17 @@ public class AbilityManager implements Listener
         }
     }
 
-    public boolean canBend(ProgressionManager.BENDER_TYPE bender, Ability.ELEMENT_TYPE element)
+    public boolean canBendType(ProgressionManager.BENDER_TYPE bender, Ability ability)
     {
-        if (bender != null && element != null) {
-            return ((bender == ProgressionManager.BENDER_TYPE.avatar) || (element.name().equals(bender.name())));
+        if (bender != null && ability != null) {
+            return ((bender == ProgressionManager.BENDER_TYPE.avatar) || (ability.getElement().name().equals(bender.name())));
         }
         else return false;
+    }
+
+    public boolean canBendLevel(Ability.ABILITY_LEVEL benderLevel, Ability ability)
+    {
+        return benderLevel.ordinal() >= ability.getLevel().ordinal();
     }
 
     public boolean removeAbility(Player player, String ability) {
@@ -113,6 +121,12 @@ public class AbilityManager implements Listener
             return true;
         }
         else return false;
+    }
+
+    public boolean removeAllAbilities(Player player)
+    {
+        abilityStorage.removeAllAbilities(player.getUniqueId(), false);
+        return true;
     }
 
     public boolean giveAbility(Player player, Ability ability)
@@ -144,6 +158,25 @@ public class AbilityManager implements Listener
                 player.getWorld().dropItem(player.getLocation(), item);
             }
             return true;
+        }
+        else return false;
+    }
+
+    public boolean dropAbilityBook(LivingEntity entity, String ability)
+    {
+        if (abilityMatrix.containsKey(ability))
+        {
+            Ability abilityObject = abilityMatrix.get(ability);
+            World world = Bukkit.getServer().getWorld("world"); // look into a better way to do this, searching by entity UUID returns null
+            if(world != null)
+            {
+                world.dropItemNaturally(entity.getLocation(), abilityObject.getSkillBookItem(plugin));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else return false;
     }
@@ -255,19 +288,25 @@ public class AbilityManager implements Listener
         {
             if (ItemMetaTag.itemStackHasTag(plugin, item, Ability.getSkillBookKey(), ability.getAbilityBookID()))
             {
-                if (canBend(progressionManager.getBenderType(player), ability.getElement()))
+                if (canBendType(progressionManager.getBenderType(player), ability))
                 {
+                    if (canBendLevel(progressionManager.getBenderLevel(player), ability))
+                    {
+                        if (!getPlayerAbilities(player).contains(ability)) {
+                            if (item.getAmount() > 1)
+                                item.setAmount(item.getAmount() - 1);
+                            else
+                                inventory.remove(item);
 
-                    if (!getPlayerAbilities(player).contains(ability)) {
-                        if (item.getAmount() > 1)
-                            item.setAmount(item.getAmount() - 1);
-                        else
-                            inventory.remove(item);
-
-                        giveAbility(player, ability);
-                        player.sendMessage("You learnt " + ability + "!");
-                    } else {
-                        player.sendMessage("You already know " + ability + "!");
+                            giveAbility(player, ability);
+                            player.sendMessage("You learnt " + ability + "!");
+                        } else {
+                            player.sendMessage("You already know " + ability + "!");
+                        }
+                    }
+                    else
+                    {
+                        player.sendMessage("You need to be "+ ability.getLevel() + " level or higher to learn this skill.");
                     }
                 }
                 else
