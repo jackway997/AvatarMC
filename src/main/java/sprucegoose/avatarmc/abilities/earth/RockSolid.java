@@ -32,13 +32,7 @@
 
  import static org.bukkit.Bukkit.getServer;
 
-/*
-Notes: bugs: when you toss the same block multiple times, sometimes the
- scheduler will remove a block from a previous toss
- */
-
  public class RockSolid extends Ability {
-
 
      public RockSolid(JavaPlugin plugin, RegionProtectionManager regProtManager) {
          super(plugin, regProtManager, ELEMENT_TYPE.earth, ABILITY_LEVEL.adept);
@@ -111,9 +105,7 @@ Notes: bugs: when you toss the same block multiple times, sometimes the
 
          };
          task1.runTaskTimer(plugin, 0L, 1L);
-
      }
-
 
      @EventHandler
      public void onPlayerInteract(PlayerInteractEvent e) {

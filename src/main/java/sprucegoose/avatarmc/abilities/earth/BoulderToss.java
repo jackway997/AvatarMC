@@ -24,13 +24,16 @@ import sprucegoose.avatarmc.utils.PlayerIDs;
 
 import java.util.*;
 
-/*
-Notes: bugs: when you toss the same block multiple times, sometimes the
- scheduler will remove a block from a previous toss
- */
 
 public class BoulderToss extends Ability
 {
+
+    private long cooldown;
+    private long stompBlockDuration; // 2
+    private double speed; // 2.0
+    private double explosionRadius; // 2
+    private double damage;
+
     private final Map<UUID, Boolean> explosionOccurred = new HashMap<>();
     private final Map<UUID, Integer> activeBends = new HashMap<>();
     private final int maxNumBends = 1;
@@ -47,15 +50,23 @@ public class BoulderToss extends Ability
     public BoulderToss(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.earth, ABILITY_LEVEL.expert);
-        setCooldown(1);
+        setCooldown(cooldown * 1000);
     }
 
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Earth.BoulderToss.Cooldown");
+        this.stompBlockDuration = getConfig().getLong("Abilities.Earth.BoulderToss.StompBlockDuration");
+        this.speed = getConfig().getDouble("Abilities.Earth.BoulderToss.Speed");
+        this.explosionRadius = getConfig().getDouble("Abilities.Earth.BoulderToss.ExplosionRadius");
+        this.damage = getConfig().getDouble("Abilities.Earth.BoulderToss.Damage");
+    }
 
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
-        UUID playerUUID = player.getUniqueId();
         EquipmentSlot slot = e.getHand();
         ItemStack item = e.getItem();
 
@@ -174,7 +185,7 @@ public class BoulderToss extends Ability
             {
                 removeCloneBlock(caster, destinationBlock);
             }
-        }, 40L); // 2 seconds delay
+        }, stompBlockDuration * 20L); // 2 seconds delay
 
         activeBends.put(uuid,activeBends.get(uuid)+1);
         //System.out.println("count increased to " + activeBends.get(uuid));
@@ -191,7 +202,7 @@ public class BoulderToss extends Ability
         double y = Math.sin(-pitch);
         double z = Math.cos(-yaw) * Math.cos(pitch);
         Vector direction = new Vector(x, y, z).normalize();
-        direction.multiply(2);
+        direction.multiply(speed); //
 
         FallingBlock fallingBlock;
 
@@ -235,7 +246,7 @@ public class BoulderToss extends Ability
             customExplosion(blockLocation, 1.0f, caster);
             performCleanup(fallingBlock, blockLocation, caster);
         } else {
-            List<Entity> nearbyEntities = fallingBlock.getNearbyEntities(0.5, 0.5, 0.5);
+            List<Entity> nearbyEntities = fallingBlock.getNearbyEntities(explosionRadius, explosionRadius, explosionRadius);
             for (Entity entity : nearbyEntities) {
                 if (entity instanceof LivingEntity && entity.getUniqueId() != uuid) {
                     //plugin.getLogger().info("Collision detected with entity: " + entity.getType());
@@ -264,13 +275,8 @@ public class BoulderToss extends Ability
         location.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, location, 25);
         location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 1.0f);
 
-        // Get nearby entities within the explosion radius
-        double explosionRadius = 3; // Adjust this value to define the explosion radius
         Collection<Entity> nearbyEntitiesCollection = location.getWorld().getNearbyEntities(location, explosionRadius, explosionRadius, explosionRadius);
         List<Entity> nearbyEntities = new ArrayList<>(nearbyEntitiesCollection);
-
-        // Calculate the fixed amount of damage to be applied to each nearby entity
-        double fixedDamage = 5.0; // Adjust this value to set the amount of damage
 
         for (Entity entity : nearbyEntities) {
             if (entity instanceof LivingEntity le && entity.getUniqueId() != caster.getUniqueId())
@@ -279,7 +285,7 @@ public class BoulderToss extends Ability
                 {
                     // Apply the fixed damage to the entity
                     regProtManager.tagEntity(le, caster);
-                    ((LivingEntity) entity).damage(fixedDamage);
+                    ((LivingEntity) entity).damage(damage);
                 }
             }
         }

@@ -25,11 +25,20 @@ import java.util.UUID;
 
 public class AirTribute extends Ability implements Listener
 {
+    private long cooldown;
+    private long duration;
 
     public AirTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.air, ABILITY_LEVEL.beginner);
-        setCooldown(5000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Air.AirTribute.Cooldown");
+        this.duration = getConfig().getLong("Abilities.Air.AirTribute.Duration");
     }
 
     private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
@@ -78,7 +87,7 @@ public class AirTribute extends Ability implements Listener
                 activeAbilities.get(uuid).cancel();
                 activeAbilities.remove(uuid);
 
-            }, 20L * 2L);
+            }, 20L * duration);
         }
     }
 

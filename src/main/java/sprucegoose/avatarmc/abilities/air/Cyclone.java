@@ -23,10 +23,28 @@ import java.util.*;
 
 public class Cyclone extends Ability implements Listener {
 
+    private long cooldown;
+    private long duration;
+    private double radius;
+    private double damage;
+    private double knockbackStrength;
+
     public Cyclone(JavaPlugin plugin, RegionProtectionManager regProtManager) {
         super(plugin, regProtManager, ELEMENT_TYPE.air, ABILITY_LEVEL.master);
-        setCooldown(10000);
+        setCooldown(cooldown * 1000);
     }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Air.Cyclone.Cooldown");
+        this.duration = getConfig().getLong("Abilities.Air.Cyclone.Duration");
+        this.radius = getConfig().getDouble("Abilities.Air.Cyclone.Radius");
+        this.damage = getConfig().getDouble("Abilities.Air.Cyclone.Damage");
+        this.knockbackStrength = getConfig().getDouble("Abilities.Air.Cyclone.KnockbackStrength");
+    }
+
+
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e) {
         EquipmentSlot slot = e.getHand();
@@ -77,7 +95,7 @@ public class Cyclone extends Ability implements Listener {
                     missile.removeMissle();
                 }
             };
-            task3.runTaskLater(plugin, 200);
+            task3.runTaskLater(plugin, 20L * duration);
             return true;
         }
         else
@@ -93,7 +111,6 @@ public class Cyclone extends Ability implements Listener {
     {
         doAbility(caster);
     }
-
 
     public class Missile {
         private Set<ArmorStand> missileSet;
@@ -122,7 +139,6 @@ public class Cyclone extends Ability implements Listener {
 
             BukkitRunnable task4 = new BukkitRunnable()
             {
-                double radius = 5; // Set your desired radius for the circle
                 double speed = 0.4; // Adjust the speed of circling as needed
                 double angle = 0.0; // Initialize the angle
                 Random random = new Random();
@@ -144,7 +160,7 @@ public class Cyclone extends Ability implements Listener {
                     }
                     if (!missile.isDead() && !(caster instanceof Player p && !p.isOnline()))
                     {
-                        Collection<Entity> nearbyEntities = caster.getWorld().getNearbyEntities(caster.getLocation(), 5.5, 2, 5.5);
+                        Collection<Entity> nearbyEntities = caster.getWorld().getNearbyEntities(caster.getLocation(), radius + 0.5, 2, radius + 0.5);
                         for (Entity entity : nearbyEntities)
                         {
                             if (entity != caster && entity instanceof LivingEntity le && caster.hasLineOfSight(entity))
@@ -152,8 +168,8 @@ public class Cyclone extends Ability implements Listener {
                                 if(regProtManager.isLocationPVPEnabled(caster, caster.getLocation()) &&
                                         regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
                                 {
-                                    le.damage(3);
-                                    le.setVelocity(caster.getLocation().getDirection().multiply(1));
+                                    le.damage(damage);
+                                    le.setVelocity(caster.getLocation().getDirection().multiply(knockbackStrength));
                                 }
                                 else
                                 {

@@ -27,7 +27,12 @@ import java.util.*;
 public class EarthPrison extends Ability
 {
 
-
+    private long cooldown;
+    private double range;
+    private double hitRadius;
+    private int height;
+    private long standTime;
+    private long crumbleTime;
 
     // put in code to deal with grass / flowers / passable nature
     private Map<UUID, BukkitRunnable> activeBends = new HashMap<>();
@@ -36,14 +41,24 @@ public class EarthPrison extends Ability
     public EarthPrison(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.earth, ABILITY_LEVEL.expert);
-        setCooldown(2000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.EarthPrison.EarthPrison.Cooldown");
+        this.range = getConfig().getDouble("Abilities.EarthPrison.EarthPrison.Range");
+        this.hitRadius = getConfig().getDouble("Abilities.EarthPrison.EarthPrison.HitRadius");
+        this.height = getConfig().getInt("Abilities.EarthPrison.EarthPrison.Height");
+        this.standTime = getConfig().getLong("Abilities.EarthPrison.EarthPrison.StandTime");
+        this.crumbleTime = getConfig().getLong("Abilities.EarthPrison.EarthPrison.CrumbleTime");
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e)
     {
         Player player = e.getPlayer();
-        UUID playerUUID = player.getUniqueId();
         EquipmentSlot slot = e.getHand();
         ItemStack item = e.getItem();
 
@@ -72,7 +87,7 @@ public class EarthPrison extends Ability
 
     private boolean doAbility(Player player)
     {
-        LivingEntity target = AbilityUtil.getHostileLOS(player, 24.0, 0.5);
+        LivingEntity target = AbilityUtil.getHostileLOS(player, range, hitRadius);
 
         // don't execute ability if either player is in a PVP disabled zone, or no target is found.
         if (    target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
@@ -110,7 +125,7 @@ public class EarthPrison extends Ability
 
         for (Location loc : prisonLocs2)
         {
-            buildPrisonPillar(loc,6);
+            buildPrisonPillar(loc,height);
         }
 
         regProtManager.tagEntity(target, player);
@@ -121,8 +136,8 @@ public class EarthPrison extends Ability
     private void buildPrisonPillar(Location location, int height)
     {
         // Parameters
-        long initialStandTime = 5L * 20L;
-        long crumbleTime = 2L * 20L;
+        long standTimeAct = standTime * 20L;
+        long crumbleTimeAct = crumbleTime * 20L;
 
         // Set and remove item meta for base (foundation block)
         Block baseBlock = location.getBlock();
@@ -139,7 +154,7 @@ public class EarthPrison extends Ability
             }
         };
         removeBaseBlockMetaTask.runTaskLater(plugin,
-                initialStandTime + crumbleTime);
+                standTimeAct + crumbleTimeAct);
 
         // spawn pillar and schedule deconstruction
         for (int ii = 0 ; ii < height ; ii++)
@@ -165,7 +180,7 @@ public class EarthPrison extends Ability
                     }
                 };
                 removePillarBlockTask.runTaskLater(plugin,
-                        initialStandTime + (long)((double)crumbleTime * ((double)(height-ii)/(double)height)));
+                        standTimeAct + (long)((double)crumbleTimeAct * ((double)(height-ii)/(double)height)));
             }
             else
             {

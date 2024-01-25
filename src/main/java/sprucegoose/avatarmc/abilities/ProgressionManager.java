@@ -29,7 +29,7 @@ public class ProgressionManager implements Listener {
         this.abilityManager = abilityManager;
     }
 
-    private long[] expLevels = {1, 500, 2000, 10000};
+    private long[] expLevels = {1, 500, 3000, 30000};
 
     public static BENDER_TYPE stringToBenderType(String input)
     {

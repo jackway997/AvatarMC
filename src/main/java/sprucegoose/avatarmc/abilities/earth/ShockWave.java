@@ -31,12 +31,30 @@ public class ShockWave extends Ability implements Listener
 
     // To do: check interaction between two shockwaves
 
+    private long cooldown;
+    private double range; // 24
+    private double shockRadius; // 2
+    private double shockOffset; // 1.5
+    private double knockUpVeclocity; // 1.3
+    private double damage; // 8
+
     private final String shockTimeKey = "ShockTimeKey";
 
     public ShockWave(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.earth, ABILITY_LEVEL.expert);
-        setCooldown(5000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Earth.ShockWave.Cooldown");
+        this.range = getConfig().getDouble("Abilities.Earth.ShockWave.Range");
+        this.shockRadius = getConfig().getDouble("Abilities.Earth.ShockWave.ShockRadius");
+        this.shockOffset = getConfig().getDouble("Abilities.Earth.ShockWave.shockOffset");
+        this.knockUpVeclocity = getConfig().getDouble("Abilities.Earth.ShockWave.KnockUpVelocity");
+        this.damage = getConfig().getDouble("Abilities.Earth.ShockWave.Damage");
     }
 
     private final List<Material> ALLOWED_BLOCK_TYPES = Arrays.asList(
@@ -90,9 +108,8 @@ public class ShockWave extends Ability implements Listener
 
     private boolean doAbility(JavaPlugin plugin, LivingEntity caster, Vector directionVector)
     {
-        final double maxDistance = 16;
+        final double maxDistance = range;
         final double stepSize = 0.5;
-        final double shockRadius = 2.0;
 
         // don't execute ability if entity is in a PVP disabled zone
         if (!regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
@@ -101,7 +118,7 @@ public class ShockWave extends Ability implements Listener
         }
 
         Location skillLocation = caster.getLocation().clone();
-        skillLocation.add(directionVector.clone().multiply(1.5)); // check this value
+        skillLocation.add(directionVector.clone().multiply(shockOffset)); // check this value
         Location castLocation = skillLocation.clone();
 
         new BukkitRunnable()
@@ -261,8 +278,8 @@ public class ShockWave extends Ability implements Listener
                         regProtManager.isLocationPVPEnabled(caster, livingEntity.getLocation()))
                 {
                     regProtManager.tagEntity(livingEntity, caster);
-                    livingEntity.setVelocity(new Vector(0,1,0).multiply(1.3));
-                    livingEntity.damage(8);
+                    livingEntity.setVelocity(new Vector(0,1,0).multiply(knockUpVeclocity));
+                    livingEntity.damage(damage);
                     livingEntity.setNoDamageTicks(8);
                     EntityUtil.setTimeStampedEntityMeta(plugin, shockTimeKey, livingEntity);
                 }

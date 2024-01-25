@@ -4,11 +4,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import sprucegoose.avatarmc.abilities.*;
 import sprucegoose.avatarmc.abilities.water.WaterEffects;
 import sprucegoose.avatarmc.commands.*;
+import sprucegoose.avatarmc.configuration.ConfigManager;
 import sprucegoose.avatarmc.listeners.SkillMenu;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.MySQL;
 import sprucegoose.avatarmc.storage.AbilityStorage;
 import sprucegoose.avatarmc.storage.ProgressionStorage;
+import sprucegoose.avatarmc.utils.TestManager;
 
 public final class AvatarMC extends JavaPlugin
 {
@@ -20,9 +22,14 @@ public final class AvatarMC extends JavaPlugin
     private SkillMenu skillMenuManager;
     private RegionProtectionManager regionProtectionManager;
     private WaterEffects waterEffects;
+    private TestManager testManager;
+    private ConfigManager configManager;
+
     @Override
     public void onEnable()
     {
+        configManager = new ConfigManager(this);
+
         saveDefaultConfig(); // add config.yml to plugins folder
 
         // Plugin startup logic
@@ -44,6 +51,7 @@ public final class AvatarMC extends JavaPlugin
                 waterEffects);
         progressionManager.setAbilityManager(abilityManager); // dodgey, lowelle
         skillMenuManager = new SkillMenu(this, abilityManager, progressionManager);
+        testManager = new TestManager(this);
 
         // Plugin startup logic
         // Register commands
@@ -57,7 +65,8 @@ public final class AvatarMC extends JavaPlugin
         getCommand("set_bender").setExecutor(new SetBenderCommand(this, progressionManager));
         getCommand("remove_bender").setExecutor(new RemoveBenderCommand(this, progressionManager));
         getCommand("give_player_exp").setExecutor(new GivePlayerExp(this, progressionManager));
-        getCommand("test4").setExecutor(new TestCommand4(this, progressionManager));
+        getCommand("change_bender_type").setExecutor(new ChangeBenderType(this, progressionManager));
+        getCommand("test_mode").setExecutor(new TestMode(this, testManager));
 
         // Register ability listeners
         for ( Ability ability : abilityManager.getAbilities())

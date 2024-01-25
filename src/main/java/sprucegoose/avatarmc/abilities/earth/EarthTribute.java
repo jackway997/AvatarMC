@@ -26,10 +26,20 @@ import java.util.UUID;
 public class EarthTribute extends Ability implements Listener
 {
 
+    private long cooldown;
+    private long duration;
+
     public EarthTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.earth, ABILITY_LEVEL.beginner);
-        setCooldown(5000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Earth.EarthTribute.Cooldown");
+        this.duration = getConfig().getLong("Abilities.Earth.EarthTribute.Duration");
     }
 
     private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
@@ -78,7 +88,7 @@ public class EarthTribute extends Ability implements Listener
                 activeAbilities.get(uuid).cancel();
                 activeAbilities.remove(uuid);
 
-            }, 20L * 2L);
+            }, 20L * duration);
         }
     }
 

@@ -25,11 +25,6 @@ import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
 
-/*
-Notes: bugs: when you toss the same block multiple times, sometimes the
- scheduler will remove a block from a previous toss
- */
-
  public class RockSmashing extends Ability
  {
 

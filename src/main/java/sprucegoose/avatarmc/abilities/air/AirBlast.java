@@ -27,10 +27,26 @@ import java.util.ArrayList;
 public class AirBlast extends Ability implements Listener
 {
 
+    private long cooldown;
+    private double range;
+    private double hitRadius;
+    private double knockbackStrength;
+    private double damage;
+
     public AirBlast(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.air, ABILITY_LEVEL.adept);
-        setCooldown(3000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Air.AirBlast.Cooldown");
+        this.range = getConfig().getDouble("Abilities.Air.AirBlast.Range");
+        this.hitRadius = getConfig().getDouble("Abilities.Air.AirBlast.HitRadius");
+        this.knockbackStrength = getConfig().getDouble("Abilities.Air.AirBlast.KnockbackStrength");
+        this.damage = getConfig().getDouble("Abilities.Air.AirBlast.Damage");
     }
 
     @EventHandler
@@ -63,15 +79,12 @@ public class AirBlast extends Ability implements Listener
 
     public boolean doAbilityAsPlayer(Player player)
     {
-        LivingEntity target = AbilityUtil.getHostileLOS(player,8, 0.5);
+        LivingEntity target = AbilityUtil.getHostileLOS(player,range, hitRadius);
         return airBlast(player, target);
     }
 
     private boolean airBlast(LivingEntity caster, LivingEntity target)
     {
-        double knockbackStrength = 3; // Adjust the knockback strength as needed
-        double damage = 2;
-
         Location location = caster.getEyeLocation();
         Vector direction = location.getDirection().normalize();
 

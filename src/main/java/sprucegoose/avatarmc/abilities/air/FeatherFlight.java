@@ -32,14 +32,25 @@ import java.util.UUID;
 
 public class FeatherFlight extends Ability implements Listener {
 
+    private long cooldown;
+    private double jumpStrength;
+
     private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
     private Map<UUID, BukkitTask> groundAnimations = new HashMap<>();
 
     public FeatherFlight(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.air, ABILITY_LEVEL.expert);
-        setCooldown(2000);
+        setCooldown(cooldown * 1000);
     }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Air.FeatherFlight.Cooldown");
+        this.jumpStrength = getConfig().getDouble("Abilities.Air.FeatherFlight.JumpStrength");
+    }
+
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e)
@@ -78,7 +89,7 @@ public class FeatherFlight extends Ability implements Listener {
         location.getWorld().playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, 10f, 0.5f);
 
         // boost player
-        player.setVelocity(direction.multiply(4));
+        player.setVelocity(direction.multiply(jumpStrength));
 
         // give slowfall
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20 * 30, 0, false, false));
