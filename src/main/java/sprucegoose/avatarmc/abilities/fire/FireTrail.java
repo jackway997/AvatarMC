@@ -2,16 +2,13 @@ package sprucegoose.avatarmc.abilities.fire;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
@@ -20,7 +17,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,8 +32,8 @@ import java.util.*;
 
 public class FireTrail extends Ability implements Listener {
     private final Map<UUID, List<Location>> fireTrailBlocks = new HashMap<>();
-    private final Set<UUID> fireTrailEnabledPlayers = new HashSet<>();
-    private final Set<UUID> fireTrailProtectionPlayers = new HashSet<>();
+    private final Set<UUID> fireTrailEnabledEntities = new HashSet<>();
+    private final Set<UUID> fireTrailProtectionEntities = new HashSet<>();
     private final int fireTrailDuration = 3 * 20; // 3 seconds in ticks (20 ticks per second)
     private final int cleanupDelay = 20;
     private final String NOSPREAD_KEY = "nospread";
@@ -57,10 +53,9 @@ public class FireTrail extends Ability implements Listener {
         if (    slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
-                && !fireTrailEnabledPlayers.contains(player.getUniqueId())
-                && !fireTrailProtectionPlayers.contains(player.getUniqueId())
+                abilityChecks(player, item) && !onCooldown(player)
+                && !fireTrailEnabledEntities.contains(player.getUniqueId())
+                && !fireTrailProtectionEntities.contains(player.getUniqueId())
         )
         {
             addCooldown(player, item);
@@ -69,28 +64,54 @@ public class FireTrail extends Ability implements Listener {
         }
     }
 
-    public boolean startTrail(JavaPlugin plugin, Player player)
+    public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
     {
-        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        startTrail(plugin, caster);
+    }
+
+    public boolean startTrail(JavaPlugin plugin, LivingEntity caster)
+    {
+        if (!regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
         {
             return false;
         }
 
-        UUID playerUUID = player.getUniqueId();
-        fireTrailEnabledPlayers.add(playerUUID);
-        fireTrailProtectionPlayers.add(playerUUID);
+        UUID casterUUID = caster.getUniqueId();
+        fireTrailEnabledEntities.add(casterUUID);
+        fireTrailProtectionEntities.add(casterUUID);
 
         // Apply speed boost when enabling the fire trail
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, fireTrailDuration, 3));
+        caster.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, fireTrailDuration, 3));
 
         //player.sendMessage(ChatColor.DARK_RED + "Fire trail enabled. You now move faster.");
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            fireTrailEnabledPlayers.remove(playerUUID);
-        }, fireTrailDuration);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            fireTrailProtectionPlayers.remove(playerUUID);
-        }, fireTrailDuration + cleanupDelay + 2);
+        BukkitRunnable burnTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                burnBehindBlock(caster);
+            }
+        };
+        burnTask.runTaskTimer(plugin, 0L,1L);
+
+        BukkitRunnable cancelTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                fireTrailEnabledEntities.remove(casterUUID);
+                if(!burnTask.isCancelled())
+                {
+                    burnTask.cancel();
+                }
+            }
+        };
+        cancelTask.runTaskLater(plugin, fireTrailDuration);
+
+        BukkitRunnable removeProtectionTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                fireTrailProtectionEntities.remove(casterUUID);
+            }
+        };
+        removeProtectionTask.runTaskLater(plugin, fireTrailDuration + cleanupDelay + 2);
 
         return true;
     }
@@ -98,15 +119,13 @@ public class FireTrail extends Ability implements Listener {
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event)
     {
-        if (event.getEntity() instanceof Player)
+        Entity entity = event.getEntity();
+        EntityDamageEvent.DamageCause cause = event.getCause();
+
+        if ((cause == EntityDamageEvent.DamageCause.FIRE || cause == EntityDamageEvent.DamageCause.FIRE_TICK)
+                && fireTrailProtectionEntities.contains(entity.getUniqueId()))
         {
-            Player player = (Player) event.getEntity();
-            UUID playerUUID = player.getUniqueId();
-            EntityDamageEvent.DamageCause cause = event.getCause();
-            if ((cause == EntityDamageEvent.DamageCause.FIRE || cause == EntityDamageEvent.DamageCause.FIRE_TICK)
-                    && fireTrailProtectionPlayers.contains(playerUUID)) {
-                event.setCancelled(true); // Prevent damage to players with fire trail enabled.
-            }
+            event.setCancelled(true); // Prevent damage to entities with fire trail enabled.
         }
     }
 
@@ -129,32 +148,28 @@ public class FireTrail extends Ability implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityCombustEvent(EntityCombustEvent event){
+    public void onEntityCombustEvent(EntityCombustEvent event)
+    {
         Entity entity = event.getEntity();
 
-        if(entity instanceof Player){
-            Player player = (Player) entity;
-            if (fireTrailProtectionPlayers.contains(player.getUniqueId()))
-            {
-                event.setCancelled(true);
-            }
+        if (fireTrailProtectionEntities.contains(entity.getUniqueId()))
+        {
+            event.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        UUID playerUUID = player.getUniqueId();
-
-        if (fireTrailEnabledPlayers.contains(playerUUID)) {
-            Vector direction = player.getLocation().getDirection().normalize().multiply(-1);
-            Location blockBehind = player.getLocation().add(direction);
+    public void burnBehindBlock(LivingEntity entity)
+    {
+        if (fireTrailEnabledEntities.contains(entity.getUniqueId()))
+        {
+            Vector direction = entity.getLocation().getDirection().normalize().multiply(-1);
+            Location blockBehind = entity.getLocation().add(direction);
             Location blockBehindBelow = blockBehind.clone().add(0,-1,0);
 
-            if (    !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
-                    !regProtManager.isLocationPVPEnabled(player, blockBehind))
+            if (    !regProtManager.isLocationPVPEnabled(entity, entity.getLocation()) ||
+                    !regProtManager.isLocationPVPEnabled(entity, blockBehind))
             { // end fire trail if player enters protected area
-                fireTrailProtectionPlayers.remove(playerUUID);
+                fireTrailProtectionEntities.remove(entity.getUniqueId());
                 return;
             }
             if (isPassableBlock(blockBehind.getBlock()))
@@ -164,15 +179,18 @@ public class FireTrail extends Ability implements Listener {
                 fireBlock.setType(Material.FIRE);
                 setNoSpread(fireBlockBase);
 
-                fireTrailBlocks.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(blockBehind); // Store fire block location
+                fireTrailBlocks.computeIfAbsent(entity.getUniqueId(), k -> new ArrayList<>()).add(blockBehind); // Store fire block location
 
                 // Schedule the removal of the fire block after a short delay
-                BukkitRunnable cleanupTask = new BukkitRunnable() {
+                BukkitRunnable cleanupTask = new BukkitRunnable()
+                {
                     @Override
-                    public void run() {
-                        if (fireTrailBlocks.containsKey(playerUUID)) {
+                    public void run()
+                    {
+                        if (fireTrailBlocks.containsKey(entity.getUniqueId()))
+                        {
                             fireBlock.setType(Material.AIR);
-                            fireTrailBlocks.get(playerUUID).remove(blockBehind); // Remove the location from the list
+                            fireTrailBlocks.get(entity.getUniqueId()).remove(blockBehind); // Remove the location from the list
                         }
                     }
                 };

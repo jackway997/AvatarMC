@@ -133,8 +133,7 @@ import static org.bukkit.Bukkit.getServer;
         if (    slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock() != null) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player))
+                abilityChecks(player, item))
         {
             if (player.getInventory().containsAtLeast(coal, 1))
             {

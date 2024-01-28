@@ -45,11 +45,9 @@ public class MeteorStrike extends Ability implements Listener
         ItemStack mainItem = player.getInventory().getItemInMainHand();
         ItemStack offHandItem = player.getInventory().getItemInOffHand();
 
-        if (    ((mainItem != null && AvatarIDs.itemStackHasAvatarID(plugin,mainItem, this.getAbilityID()) &&
-                    PlayerIDs.itemStackHasPlayerID(plugin, mainItem, player))
+        if (    ((mainItem != null && abilityChecks(player, mainItem))
                 ||
-                (offHandItem != null && AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
-                        PlayerIDs.itemStackHasPlayerID(plugin, offHandItem, player)))
+                (offHandItem != null && abilityChecks(player, offHandItem)))
                 && !onCooldown(player) && e.isSneaking())
         {
 

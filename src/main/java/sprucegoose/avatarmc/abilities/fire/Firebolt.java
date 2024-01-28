@@ -44,9 +44,7 @@ public class Firebolt extends Ability
         // Check if the player is holding the skill item
         if (slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
-                (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player))
+                (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) && abilityChecks(player, item))
         {
             if (activeBends.containsKey(playerUUID))
             {

@@ -109,6 +109,15 @@ public abstract class Ability implements Listener {
         };
     }
 
+    protected boolean abilityChecks(Player player, ItemStack item)
+    {
+        return (
+            AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
+            PlayerIDs.itemStackHasPlayerID(plugin, item, player) &&
+            AbilityManager.getInstance().hasAbility(player, this)
+        );
+    }
+
     protected ChatColor getSkillTitleColor()
     {
         return getElementColor(element);

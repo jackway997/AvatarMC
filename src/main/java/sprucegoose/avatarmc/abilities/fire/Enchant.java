@@ -25,6 +25,13 @@ import java.util.*;
 
 public class Enchant extends Ability implements Listener {
 
+    private long cooldown;
+    private long duration; // 20s
+    private long trueBurnDuration; // 8s
+    private double hitRadius;
+    private double knockbackStrength;
+    private double damage;
+
     public Enchant(JavaPlugin plugin, RegionProtectionManager regProtMan) {
         super(plugin, regProtMan, ELEMENT_TYPE.fire, ABILITY_LEVEL.adept);
         setCooldown(30000);
@@ -41,8 +48,7 @@ public class Enchant extends Ability implements Listener {
         if (slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
+                abilityChecks(player, item) && !onCooldown(player)
         ) {
 
 
@@ -77,7 +83,7 @@ public class Enchant extends Ability implements Listener {
 
             }
         };
-        task1.runTaskLater(plugin, 400);
+        task1.runTaskLater(plugin, duration * 20L);
     }
 
     public boolean getEntityHit(Player p) {
@@ -135,8 +141,6 @@ public class Enchant extends Ability implements Listener {
                     trueBurnTimer(target);
                     trueBurn(target);
 
-
-
                 }
 
             }
@@ -150,9 +154,9 @@ public class Enchant extends Ability implements Listener {
                 p.removeMetadata("trueBurn", plugin);
 
             }
-        };task2.runTaskLater(plugin, 160L);
+        };task2.runTaskLater(plugin, trueBurnDuration * 20L);
     }
-    public void trueBurn(Entity p) {
+    public void trueBurn(LivingEntity caster, Entity p) {
         BukkitRunnable task2 = new BukkitRunnable() {
             @Override
             public void run() {
@@ -162,13 +166,20 @@ public class Enchant extends Ability implements Listener {
                 World world = location.getWorld();
 
                 if (p.hasMetadata("trueBurn")) {
-                    if (world != null) {
+                    if (world != null && !regProtManager.isLocationPVPEnabled(caster, p.getLocation())) {
                         for (int i = 0; i < 1; i++) { // Spawn 30 particle
                             if (!target.isDead()) {
                                 world.spawnParticle(Particle.SOUL_FIRE_FLAME, location, 0, 0, 0, 0, 0.1);
                                 ((LivingEntity) p).damage(2);
 
                             }
+                        }
+                    }
+                    else
+                    {
+                        if(!this.isCancelled())
+                        {
+                            this.cancel();
                         }
                     }
 

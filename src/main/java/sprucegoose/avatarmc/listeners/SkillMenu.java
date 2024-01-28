@@ -34,7 +34,7 @@ public class SkillMenu implements Listener
 
     private final static String skillMenuName = ChatColor.BLACK + ""+ ChatColor.BOLD+ "Abilities";
 
-    private boolean isSkillMenu(String invName)
+    public static boolean isSkillMenu(String invName)
     {
         if (invName != null && invName.length() >= skillMenuName.length()) {
             String invPrefix = invName.substring(0, skillMenuName.length());
@@ -128,6 +128,8 @@ public class SkillMenu implements Listener
             player.getInventory().addItem(ability.getAbilityItem(plugin, player));
         }
     }
+
+
 
 
 }

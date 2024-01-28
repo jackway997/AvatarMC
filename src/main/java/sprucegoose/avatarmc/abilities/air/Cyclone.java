@@ -55,8 +55,7 @@ public class Cyclone extends Ability implements Listener {
         if (slot != null && item != null &&
                 (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer()) && !onCooldown(player)
+                abilityChecks(player, item) && !onCooldown(player)
         )
         {
             addCooldown(player, item);

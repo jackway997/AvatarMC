@@ -290,13 +290,13 @@ public class ConfigManager {
             config.addDefault("Abilities.Earth.BoulderToss.ExplosionRadius", 2.0);
             config.addDefault("Abilities.Earth.BoulderToss.Damage", 8);
 
-            config.addDefault("Abilities.EarthPrison.EarthPrison.Enabled", true);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.Cooldown", 60);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.Range", 24);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.HitRadius", 0.5);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.Height", 6);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.StandTime", 5);
-            config.addDefault("Abilities.EarthPrison.EarthPrison.CrumbleTime", 2);
+            config.addDefault("Abilities.Earth.EarthPrison.Enabled", true);
+            config.addDefault("Abilities.Earth.EarthPrison.Cooldown", 60);
+            config.addDefault("Abilities.Earth.EarthPrison.Range", 24);
+            config.addDefault("Abilities.Earth.EarthPrison.HitRadius", 0.5);
+            config.addDefault("Abilities.Earth.EarthPrison.Height", 6);
+            config.addDefault("Abilities.Earth.EarthPrison.StandTime", 5);
+            config.addDefault("Abilities.Earth.EarthPrison.CrumbleTime", 2);
 
             config.addDefault("Abilities.Earth.EarthTribute.Enabled", true);
             config.addDefault("Abilities.Earth.EarthTribute.Cooldown", 10);

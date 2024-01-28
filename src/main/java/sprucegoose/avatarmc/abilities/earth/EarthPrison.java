@@ -47,12 +47,12 @@ public class EarthPrison extends Ability
     @Override
     public void loadProperties()
     {
-        this.cooldown = getConfig().getLong("Abilities.EarthPrison.EarthPrison.Cooldown");
-        this.range = getConfig().getDouble("Abilities.EarthPrison.EarthPrison.Range");
-        this.hitRadius = getConfig().getDouble("Abilities.EarthPrison.EarthPrison.HitRadius");
-        this.height = getConfig().getInt("Abilities.EarthPrison.EarthPrison.Height");
-        this.standTime = getConfig().getLong("Abilities.EarthPrison.EarthPrison.StandTime");
-        this.crumbleTime = getConfig().getLong("Abilities.EarthPrison.EarthPrison.CrumbleTime");
+        this.cooldown = getConfig().getLong("Abilities.Earth.EarthPrison.Cooldown");
+        this.range = getConfig().getDouble("Abilities.Earth.EarthPrison.Range");
+        this.hitRadius = getConfig().getDouble("Abilities.Earth.EarthPrison.HitRadius");
+        this.height = getConfig().getInt("Abilities.Earth.EarthPrison.Height");
+        this.standTime = getConfig().getLong("Abilities.Earth.EarthPrison.StandTime");
+        this.crumbleTime = getConfig().getLong("Abilities.Earth.EarthPrison.CrumbleTime");
     }
 
     @EventHandler
@@ -66,8 +66,7 @@ public class EarthPrison extends Ability
         if (slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player))
+                abilityChecks(player, item) && !onCooldown(player))
         {
             if (doAbility(e.getPlayer()))
             {

@@ -5,6 +5,7 @@ import sprucegoose.avatarmc.abilities.*;
 import sprucegoose.avatarmc.abilities.water.WaterEffects;
 import sprucegoose.avatarmc.commands.*;
 import sprucegoose.avatarmc.configuration.ConfigManager;
+import sprucegoose.avatarmc.listeners.CraftBlocks;
 import sprucegoose.avatarmc.listeners.SkillMenu;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.storage.MySQL;
@@ -78,6 +79,7 @@ public final class AvatarMC extends JavaPlugin
         getServer().getPluginManager().registerEvents(abilityManager, this);
         getServer().getPluginManager().registerEvents(waterEffects, this);
         getServer().getPluginManager().registerEvents(progressionManager, this);
+        getServer().getPluginManager().registerEvents(new CraftBlocks(this), this);
     }
 
     @Override
