@@ -40,13 +40,13 @@ public class MobUseHostileAbilityCommand implements CommandExecutor
             return true;
         }
 
-        if (target != null && ability != null)
+        if (/*target != null &&*/ ability != null)
         {
             ability.doHostileAbilityAsMob(caster, target);
         }
         else
         {
-            plugin.getLogger().warning(caster + " tried to use ["+ strings[1] + "] on ["+ strings[0] + "], but failed.");
+            plugin.getLogger().warning(caster + " tried to use ["+ strings[2] + "] on ["+ strings[1] + "], but failed.");
         }
         return true;
     }

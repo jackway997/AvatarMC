@@ -44,16 +44,14 @@ public class FlowAsWater extends WaterAbility
         ItemStack mainItem = player.getInventory().getItemInMainHand();
         ItemStack offHandItem = player.getInventory().getItemInOffHand();
 
-        if (mainItem != null && AvatarIDs.itemStackHasAvatarID(plugin, mainItem, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, mainItem, player) && !onCooldown(player) && e.isSneaking())
+        if (mainItem != null && abilityChecks(player, mainItem) && !onCooldown(player) && e.isSneaking())
         {
             if (!onCooldown(player))
             {
                 addCooldown(player, mainItem);
                 doAbility(plugin, player);
             }
-        } else if (offHandItem != null && AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, offHandItem, player) && !onCooldown(player) && e.isSneaking())
+        } else if (offHandItem != null && abilityChecks(player, offHandItem) && !onCooldown(player) && e.isSneaking())
 
         {
             if (!onCooldown(player))

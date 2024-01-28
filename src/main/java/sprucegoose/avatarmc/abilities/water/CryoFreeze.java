@@ -43,10 +43,10 @@ public class CryoFreeze extends Ability implements Listener {
                 e.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
                 targetBlockLocation.isEmpty() &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) /*&&
+                abilityChecks(player, item) && !onCooldown(player) /*&&
                 !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)*/
-        ) {
+        )
+        {
             addCooldown(player, item);
             doAbility(player);
             e.setCancelled(true);

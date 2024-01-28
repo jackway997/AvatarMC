@@ -46,15 +46,12 @@ public class WaterWhip extends Ability implements Listener
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
 
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player) /*&&
-                !regProtManager.isRegionProtected(player, e.getClickedBlock().getLocation(),this)*/
-        ) {
+                abilityChecks(player, item) && !onCooldown(player)
+        )
+        {
             addCooldown(player, item);
             waterWhipAsPlayer(player);
             e.setCancelled(true);
-
-
         }
     }
 
@@ -74,7 +71,7 @@ public class WaterWhip extends Ability implements Listener
 
     public boolean waterWhip(LivingEntity caster, Vector direction) { //player p comes from the interact event player
 
-            plugin.getLogger().info("water whip called");
+            //plugin.getLogger().info("water whip called");
 
 
                 Location eyeLocation = caster.getLocation();
@@ -145,9 +142,9 @@ public class WaterWhip extends Ability implements Listener
                             if (entity != null && entity != caster && entity instanceof LivingEntity le && caster.hasLineOfSight(entity)) {
 
 
-                                le.sendMessage("you have been hit by a water whip");
-                                caster.sendMessage("you have hit " + le);
-                                le.damage(10);
+                                //le.sendMessage("you have been hit by a water whip");
+                                //caster.sendMessage("you have hit " + le);
+                                le.damage(5);
                                 le.setMetadata("entityHit", new FixedMetadataValue(plugin, true));
                                 //delete the last particle and somehow cancel the particles from spawning
                                 return true;

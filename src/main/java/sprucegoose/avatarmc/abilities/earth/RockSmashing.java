@@ -25,11 +25,6 @@ import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
 
-/*
-Notes: bugs: when you toss the same block multiple times, sometimes the
- scheduler will remove a block from a previous toss
- */
-
  public class RockSmashing extends Ability
  {
 
@@ -138,8 +133,7 @@ Notes: bugs: when you toss the same block multiple times, sometimes the
         if (    slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock() != null) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player))
+                abilityChecks(player, item))
         {
             if (player.getInventory().containsAtLeast(coal, 1))
             {

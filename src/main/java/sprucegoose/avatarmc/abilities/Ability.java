@@ -3,6 +3,7 @@ package sprucegoose.avatarmc.abilities;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -11,10 +12,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
+import sprucegoose.avatarmc.configuration.ConfigManager;
 import sprucegoose.avatarmc.region.RegionProtectionManager;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 import sprucegoose.avatarmc.utils.ItemMetaTag;
 import sprucegoose.avatarmc.utils.PlayerIDs;
+import sprucegoose.avatarmc.utils.TestManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +38,7 @@ public abstract class Ability implements Listener {
     private static final String skillBookKey = "AvatarMCSkillBookKey";
 
     public Ability(JavaPlugin plugin, RegionProtectionManager regProtManager, ELEMENT_TYPE element, ABILITY_LEVEL level) {
+        loadProperties();
         this.plugin = plugin;
         this.regProtManager = regProtManager;
         this.element = element;
@@ -54,12 +58,18 @@ public abstract class Ability implements Listener {
     }
 
     public void addCooldown(Player player, ItemStack item) {
+
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
         //System.out.println("Cooldown added for "+ player.getName()); // debug info
         updateCooldownDisplay(player, item);
     }
 
     public boolean onCooldown(Player player) {
+        if (TestManager.getInstance().playerInTestMode(player))
+        {
+            return false;
+        }
+
         Long lastTime = cooldowns.get(player.getUniqueId());
         if (lastTime == null)
             return false;
@@ -79,6 +89,15 @@ public abstract class Ability implements Listener {
         throw new IllegalArgumentException("doHostileAbilityAsMob(LivingEntity caster, LivingEntity target) not implemented for: " + getAbilityName());
     }
 
+    public void loadProperties()
+    {
+
+    }
+
+    public FileConfiguration getConfig()
+    {
+        return ConfigManager.getConfig();
+    }
 
     public ChatColor getBookColour()
     {
@@ -88,6 +107,15 @@ public abstract class Ability implements Listener {
             case expert -> ChatColor.DARK_PURPLE;
             case master -> ChatColor.GOLD;
         };
+    }
+
+    protected boolean abilityChecks(Player player, ItemStack item)
+    {
+        return (
+            AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
+            PlayerIDs.itemStackHasPlayerID(plugin, item, player) &&
+            AbilityManager.getInstance().hasAbility(player, this)
+        );
     }
 
     protected ChatColor getSkillTitleColor()

@@ -38,6 +38,9 @@ public class AbilityManager implements Listener
     private final ProgressionManager progressionManager;
     private final RegionProtectionManager regProtManager;
     private final WaterEffects waterEffects;
+
+    private static AbilityManager instance;
+
     //private final EarthAbilityManager earthAbilityManager;
     //private final FireAbilityManager fireAbilityManager;
     //private final AirAbilityManager airAbilityManager;
@@ -53,6 +56,7 @@ public class AbilityManager implements Listener
         this.waterEffects = waterEffects;
 
         registerAbilities();
+        instance = this;
     }
 
     private void registerAbilities()
@@ -101,7 +105,7 @@ public class AbilityManager implements Listener
         }
     }
 
-    public boolean canBendType(ProgressionManager.BENDER_TYPE bender, Ability ability)
+    public static boolean canBendType(ProgressionManager.BENDER_TYPE bender, Ability ability)
     {
         if (bender != null && ability != null) {
             return ((bender == ProgressionManager.BENDER_TYPE.avatar) || (ability.getElement().name().equals(bender.name())));
@@ -109,9 +113,22 @@ public class AbilityManager implements Listener
         else return false;
     }
 
-    public boolean canBendLevel(Ability.ABILITY_LEVEL benderLevel, Ability ability)
+    public static boolean canBendLevel(Ability.ABILITY_LEVEL benderLevel, Ability ability)
     {
         return benderLevel.ordinal() >= ability.getLevel().ordinal();
+    }
+
+    public boolean hasAbility(Player player, Ability ability)
+    {
+        Set<String> knownAbilities = abilityStorage.getAbilities(player.getUniqueId());
+        for (String abilityName : knownAbilities)
+        {
+            if (abilityName.equalsIgnoreCase(ability.getAbilityID()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean removeAbility(Player player, String ability) {
@@ -317,5 +334,10 @@ public class AbilityManager implements Listener
 
             }
         }
+    }
+
+    public static AbilityManager getInstance()
+    {
+        return instance;
     }
 }

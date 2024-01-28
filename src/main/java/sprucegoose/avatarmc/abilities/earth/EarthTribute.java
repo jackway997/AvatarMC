@@ -26,10 +26,20 @@ import java.util.UUID;
 public class EarthTribute extends Ability implements Listener
 {
 
+    private long cooldown;
+    private long duration;
+
     public EarthTribute(JavaPlugin plugin, RegionProtectionManager regProtMan)
     {
         super(plugin, regProtMan, ELEMENT_TYPE.earth, ABILITY_LEVEL.beginner);
-        setCooldown(5000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Earth.EarthTribute.Cooldown");
+        this.duration = getConfig().getLong("Abilities.Earth.EarthTribute.Duration");
     }
 
     private Map<UUID, BukkitTask> activeAbilities = new HashMap<>();
@@ -44,8 +54,7 @@ public class EarthTribute extends Ability implements Listener
         if (    slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player)
+                abilityChecks(player, item) && !onCooldown(player)
         )
         {
             addCooldown(player, item);
@@ -78,7 +87,7 @@ public class EarthTribute extends Ability implements Listener
                 activeAbilities.get(uuid).cancel();
                 activeAbilities.remove(uuid);
 
-            }, 20L * 2L);
+            }, 20L * duration);
         }
     }
 

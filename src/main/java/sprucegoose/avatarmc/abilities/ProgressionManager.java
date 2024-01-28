@@ -12,6 +12,7 @@ import sprucegoose.avatarmc.storage.ProgressionStorage;
 
 public class ProgressionManager implements Listener {
 
+    private static ProgressionManager instance;
     public enum BENDER_TYPE{air, water, earth, fire, avatar, none}
     private final JavaPlugin plugin;
     private final ProgressionStorage progressionStorage;
@@ -22,6 +23,7 @@ public class ProgressionManager implements Listener {
         this.plugin = plugin;
         this.progressionStorage = progressionStorage;
         //this.abilityManager = abilityManager;
+        instance = this;
     }
 
     public void setAbilityManager(AbilityManager abilityManager)
@@ -29,7 +31,7 @@ public class ProgressionManager implements Listener {
         this.abilityManager = abilityManager;
     }
 
-    private long[] expLevels = {1, 500, 2000, 10000};
+    private long[] expLevels = {1, 500, 3000, 30000};
 
     public static BENDER_TYPE stringToBenderType(String input)
     {
@@ -226,5 +228,10 @@ public class ProgressionManager implements Listener {
     {
         progressionStorage.unloadAll();
 
+    }
+
+    public static ProgressionManager getInstance()
+    {
+        return instance;
     }
 }

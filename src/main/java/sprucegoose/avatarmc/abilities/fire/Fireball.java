@@ -49,8 +49,7 @@ public class Fireball extends Ability
         if (slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin, item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player))
+                abilityChecks(player, item))
         {
             e.setCancelled(true);
 

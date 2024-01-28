@@ -64,8 +64,7 @@ public class IceBlade extends WaterAbility implements Listener
         if (    slot != null && inventory.contains(item) &&
                 (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) && // right click
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) && player.isSneaking() &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, player) && !onCooldown(player))
+                 player.isSneaking() && abilityChecks(player, item) && !onCooldown(player))
         {
             e.setCancelled(true);
             createBlade(plugin, player);

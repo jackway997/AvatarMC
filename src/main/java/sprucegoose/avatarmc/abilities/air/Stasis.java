@@ -41,15 +41,29 @@ import java.util.UUID;
 
 public class Stasis extends Ability implements Listener
 {
+    private long cooldown; //7
+    private double maxTravelStep; // 0.3
+    private long duration; //5L * 20L
+    private double range; // 10
+    private double hitRadius; // 0.5
 
     public Stasis(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.air, ABILITY_LEVEL.master);
-        setCooldown(7000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Air.Stasis.Cooldown");
+        this.maxTravelStep = getConfig().getDouble("Abilities.Air.Stasis.MaxTravelStep");
+        this.duration = getConfig().getLong("Abilities.Air.Stasis.Duration");
+        this.range = getConfig().getDouble("Abilities.Air.Stasis.Range");
+        this.hitRadius = getConfig().getDouble("Abilities.Air.Stasis.HitRadius");
     }
 
     private final String activeCastKey = "CastStasisKey";
-    private HashMap<UUID, UUID> activeBends = new HashMap<>();
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent e)
@@ -62,8 +76,7 @@ public class Stasis extends Ability implements Listener
         if (    slot != null && item != null &&
                 (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) &&
                 (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
-                AvatarIDs.itemStackHasAvatarID(plugin,item, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, item, e.getPlayer())
+                abilityChecks(player, item)
             )
         {
             // update the timestamp that the player last registered a right click event.
@@ -84,10 +97,8 @@ public class Stasis extends Ability implements Listener
     {
         // Constants
         final double interactEventTimeWindow = 1; // determine what this number needs to be
-        final double maxTravelStep = 0.3;
-        final long abilityDuration = 5L * 20L;
 
-        LivingEntity target = AbilityUtil.getHostileLOS(player, 10, 0.5);
+        LivingEntity target = AbilityUtil.getHostileLOS(player, range, hitRadius);
 
         // don't execute ability if either player is in a PVP disabled zone, or no target is found.
         if (target == null || !regProtManager.isLocationPVPEnabled(player, player.getLocation()) ||
@@ -170,7 +181,7 @@ public class Stasis extends Ability implements Listener
                 }
             }
         };
-        cancelTask.runTaskLater(plugin, abilityDuration);
+        cancelTask.runTaskLater(plugin, duration * 20L);
         return true;
     }
 
@@ -178,11 +189,6 @@ public class Stasis extends Ability implements Listener
     {
         // circle =
     }
-
-
-
-
-
 
     @Override
     public ItemStack getAbilityItem(JavaPlugin plugin, Player player)

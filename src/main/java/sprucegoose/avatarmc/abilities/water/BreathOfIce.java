@@ -40,8 +40,7 @@ public class BreathOfIce extends WaterAbility
         ItemStack mainItem = player.getInventory().getItemInMainHand();
         ItemStack offHandItem = player.getInventory().getItemInOffHand();
 
-        if (    AvatarIDs.itemStackHasAvatarID(plugin,mainItem, this.getAbilityID()) &&
-                PlayerIDs.itemStackHasPlayerID(plugin, mainItem, player) && !onCooldown(player) && e.isSneaking())
+        if (    abilityChecks(player, mainItem) && !onCooldown(player) && e.isSneaking())
         {
             if (!onCooldown(player))
             {
@@ -49,8 +48,7 @@ public class BreathOfIce extends WaterAbility
                 doAbility(player);
             }
         }
-        else if (AvatarIDs.itemStackHasAvatarID(plugin, offHandItem, this.getAbilityID()) &&
-                        PlayerIDs.itemStackHasPlayerID(plugin, offHandItem, player) && !onCooldown(player) && e.isSneaking())
+        else if (abilityChecks(player, offHandItem) && !onCooldown(player) && e.isSneaking())
 
         {
             if (!onCooldown(player))
