@@ -310,6 +310,30 @@ public class ConfigManager {
             config.addDefault("Abilities.Earth.ShockWave.KnockUpVelocity", 1.3);
             config.addDefault("Abilities.Earth.ShockWave.Damage", 8);
 
+            // Fire
+            config.addDefault("Abilities.Fire.Enchant.Enabled", true);
+            config.addDefault("Abilities.Fire.Enchant.Cooldown", 30);
+            config.addDefault("Abilities.Fire.Enchant.Duration", 20);
+            config.addDefault("Abilities.Fire.Enchant.TrueBurnDuration", 8);
+            config.addDefault("Abilities.Fire.Enchant.TickDamage", 2);
+
+            config.addDefault("Abilities.Fire.Firebolt.Enabled", true);
+            config.addDefault("Abilities.Fire.Firebolt.Cooldown", 3);
+            config.addDefault("Abilities.Fire.Firebolt.Range", 50);
+            config.addDefault("Abilities.Fire.Firebolt.HandFlameDuration", 2);
+            config.addDefault("Abilities.Fire.Firebolt.BlastRadius", 0.5);
+            config.addDefault("Abilities.Fire.Firebolt.CollisionRadius", 0.5);
+            config.addDefault("Abilities.Fire.Firebolt.BurnDuration", 1);
+            config.addDefault("Abilities.Fire.Firebolt.Damage", 5);
+
+            config.addDefault("Abilities.Fire.Fireball.Enabled", true);
+            config.addDefault("Abilities.Fire.Fireball.Cooldown", 30);
+            config.addDefault("Abilities.Fire.Fireball.Range", 50);
+            config.addDefault("Abilities.Fire.Fireball.HandFlameDuration", 5);
+            config.addDefault("Abilities.Fire.Fireball.BlastRadius", 4);
+            config.addDefault("Abilities.Fire.Fireball.CollisionRadius", 0.5);
+            config.addDefault("Abilities.Fire.Fireball.BurnDuration", 5);
+            config.addDefault("Abilities.Fire.Fireball.Damage", 12);
 
             defaultConfig.save();
         }

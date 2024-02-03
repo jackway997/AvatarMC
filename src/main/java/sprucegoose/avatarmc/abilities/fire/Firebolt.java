@@ -25,12 +25,31 @@ import java.util.*;
 public class Firebolt extends Ability
 {
     private final Map<UUID, BukkitRunnable> activeBends = new HashMap<>();
-    private final Map<UUID, BukkitRunnable> cancelTasks = new HashMap<>();
+
+    private long cooldown;
+    private double range;
+    private long handFlameDuration;
+    private double blastRadius;
+    private double collisionRadius;
+    private int burnDuration;
+    private double damage;
 
     public Firebolt(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.fire, ABILITY_LEVEL.adept);
-        setCooldown(2000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Fire.Firebolt.Cooldown");
+        this.range = getConfig().getDouble("Abilities.Fire.Firebolt.Range");
+        this.handFlameDuration = getConfig().getLong("Abilities.Fire.Firebolt.HandFlameDuration");
+        this.blastRadius = getConfig().getDouble("Abilities.Fire.Firebolt.BlastRadius");
+        this.collisionRadius = getConfig().getDouble("Abilities.Fire.Firebolt.CollisionRadius");
+        this.burnDuration = getConfig().getInt("Abilities.Fire.Firebolt.BurnDuration");
+        this.damage = getConfig().getDouble("Abilities.Fire.Firebolt.Damage");
     }
 
     @EventHandler
@@ -44,11 +63,14 @@ public class Firebolt extends Ability
         // Check if the player is holding the skill item
         if (slot != null && item != null &&
                 (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) &&
-                (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) && abilityChecks(player, item))
+                (slot.equals(EquipmentSlot.HAND) || slot.equals(EquipmentSlot.OFF_HAND)) &&
+                abilityChecks(player, item))
         {
+            e.setCancelled(true);
+
             if (activeBends.containsKey(playerUUID))
             {
-                launchFireBoltAsPlayer(player);
+                launchFireBallAsPlayer(player);
             }
             else if (!onCooldown(player))
             {
@@ -56,8 +78,8 @@ public class Firebolt extends Ability
                 {
                     addCooldown(player, item);
                 }
+
             }
-            e.setCancelled(true);
         }
     }
 
@@ -65,126 +87,24 @@ public class Firebolt extends Ability
     public void doHostileAbilityAsMob(LivingEntity caster, LivingEntity target)
     {
         Vector direction = target.getLocation().clone().subtract(caster.getLocation().clone()).toVector().normalize();
-        launchFirebolt(caster, direction);
+        launchFireball(caster, direction);
     }
 
-    public void launchFireBoltAsPlayer(Player caster)
+    public void launchFireBallAsPlayer(Player caster)
     {
         Vector direction = caster.getEyeLocation().getDirection().normalize();
-        launchFirebolt(caster, direction);
-    }
-
-    private void launchFirebolt(LivingEntity caster, Vector direction)
-    {
-        UUID playerUUID = caster.getUniqueId();
-
-        double maxRange = 50.0; // Adjust the maximum range as desired
-        double stepSize = 1;
-        Location location = getFireLoc(caster);
-        Location originalLocation = location.clone();
-
-        BukkitRunnable animationTask = activeBends.get(playerUUID);
-        if (animationTask != null && !animationTask.isCancelled())
-        {
-            animationTask.cancel();
-            activeBends.remove(playerUUID);
-        }
-
-        BukkitRunnable cancelTask = cancelTasks.get(playerUUID);
-        if(cancelTask != null && !cancelTask.isCancelled())
-        {
-            cancelTask.cancel();
-            cancelTasks.remove(playerUUID);
-        }
-
-        if (!regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
-        {
-            return;
-        }
-
-        BukkitRunnable scheduler = new BukkitRunnable() {
-            @Override
-            public void run() {
-                double distance = originalLocation.distance(location);
-                if (distance < maxRange)
-                {
-                    location.add(direction.clone().multiply(stepSize));
-                    Block block = location.getBlock();
-                    if (!block.isPassable())
-                    {
-                        this.cancel();
-                    } else
-                    {
-                        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, 1, 1, 1);
-                        entitiesHit.remove(caster);
-                        if (!entitiesHit.isEmpty())
-                        {
-                            for (Entity entity : entitiesHit)
-                            {
-                                if (entity instanceof LivingEntity)
-                                {
-                                    if (regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
-                                    {
-                                        LivingEntity livingEntity = (LivingEntity) entity;
-
-                                        // do something to each entity
-                                        regProtManager.tagEntity(livingEntity, caster);
-                                        livingEntity.setFireTicks(3 * 20);
-                                        livingEntity.damage(6, caster);
-                                        entity.getWorld().spawnParticle(Particle.CRIT_MAGIC,
-                                                entity.getLocation(), 1, 0, 0, 0, 0);
-
-                                        if (!this.isCancelled())
-                                        {
-                                            this.cancel();
-                                        }
-                                        return;
-                                    }
-                                    else
-                                    {
-                                        if (!this.isCancelled())
-                                        {
-                                            this.cancel();
-                                        }
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    caster.getWorld().spawnParticle(Particle.FLAME, location, 2, 0, 0, 0, 0);
-                    caster.getWorld().spawnParticle(Particle.SMOKE_NORMAL, location, 1, 0, 0, 0, 0);
-
-                }
-                else
-                {
-                    if (!this.isCancelled())
-                    {
-                        this.cancel();
-                    }
-                }
-
-            }
-        };
-        scheduler.runTaskTimer(plugin, 0, 1L);
-    }
-
-    public ItemStack getAbilityItem (JavaPlugin plugin, Player player)
-    {
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.GRAY + "Practice makes perfect");
-        return getAbilityItem(plugin, player, lore, 2);
+        launchFireball(caster, direction);
     }
 
 
-    public Location getFireLoc (LivingEntity player)
+    public Location getFireLoc (LivingEntity caster)
     {
-        double sideScaleFactor = 0.4;
-        double fireDownScaleFactor = 0.2;
+        double sideScaleFactor = 0.55;
+        double fireDownScaleFactor = 0.25;
 
-        Location fireLoc = player.getEyeLocation();
-        Vector sideWayOffset = player.getLocation().getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(sideScaleFactor);
-        Vector fireDownOffset = player.getLocation().getDirection().crossProduct(sideWayOffset).normalize().multiply(fireDownScaleFactor);
+        Location fireLoc = caster.getEyeLocation();
+        Vector sideWayOffset = caster.getLocation().getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(sideScaleFactor);
+        Vector fireDownOffset = caster.getLocation().getDirection().crossProduct(sideWayOffset).normalize().multiply(fireDownScaleFactor);
 
         //Add offsets
         fireLoc.add(fireLoc.getDirection().multiply(1));
@@ -194,43 +114,166 @@ public class Firebolt extends Ability
         return fireLoc;
     }
 
-    private boolean summonHandFlame(Player player) {
+    private boolean summonHandFlame(Player player)
+    {
         UUID playerUUID = player.getUniqueId();
 
-        if (!regProtManager.isLocationPVPEnabled(player, player.getLocation())) {
+        if ( !regProtManager.isLocationPVPEnabled(player, player.getLocation()))
+        {
             return false;
         }
 
         // Schedule Task to animate flame
-        BukkitRunnable task1 = new BukkitRunnable()
+        BukkitRunnable handFlame = new BukkitRunnable()
         {
             @Override
             public void run()
             {
                 Location fireLoc = getFireLoc(player);
-
                 player.getWorld().spawnParticle(Particle.FLAME, fireLoc, 2, 0, 0, 0, 0);
                 player.getWorld().spawnParticle(Particle.SMOKE_NORMAL, fireLoc, 1, 0, 0, 0, 0);
             }
         };
-        task1.runTaskTimer(plugin,0L, 1L);
-        activeBends.put(playerUUID, task1);
+        handFlame.runTaskTimer(plugin,0 ,1L);
+        activeBends.put(playerUUID, handFlame);
 
-        // With BukkitScheduler
-        BukkitRunnable task2 = new BukkitRunnable() {
+        // Schedule task to cancel hand flame animation
+        BukkitRunnable cancelTask = new BukkitRunnable()
+        {
             @Override
-            public void run() {
-            if (!task1.isCancelled())
+            public void run()
+            {
+                if (!handFlame.isCancelled())
                 {
-                    task1.cancel();
+                    handFlame.cancel();
                     activeBends.remove(playerUUID);
-                    cancelTasks.remove(playerUUID);
                 }
             }
         };
-        task2.runTaskLater(plugin, 5L * 20L);
-        cancelTasks.put(playerUUID, task2);
+        cancelTask.runTaskLater(plugin,handFlameDuration * 20L);
         return true;
+    }
+
+    private void launchFireball(LivingEntity caster, Vector direction)
+    {
+        UUID playerUUID = caster.getUniqueId();
+
+        double maxRange = range; // Adjust the maximum range as desired
+        double stepSize = 1;
+        Location location = getFireLoc(caster);
+        Location originalLocation = location.clone();
+
+        // Remove Static flame animation //////////
+
+        if (activeBends.containsKey(playerUUID))
+        {
+            BukkitRunnable handFlame = activeBends.get(playerUUID);
+            if (!handFlame.isCancelled())
+            {
+                handFlame.cancel();
+            }
+            activeBends.remove(playerUUID);
+        }
+
+        if ( !regProtManager.isLocationPVPEnabled(caster, caster.getLocation()))
+        {
+            return;
+        }
+
+        // Animate Directional Flame
+        spawnFireball(caster, location, direction, stepSize);
+
+        BukkitRunnable fireballTask = new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                double distance = originalLocation.distance(location);
+                if (distance < maxRange)
+                {
+                    location.add(direction.clone().multiply(stepSize));
+                    Block block = location.getBlock();
+                    if (!block.isPassable()) // if fireball hits something solid
+                    {
+                        this.cancel();
+                        explodeFireball(location, caster, blastRadius);
+
+                    } else
+                    {
+                        // Check to collision with entity (radius of 1)
+                        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, collisionRadius,
+                                collisionRadius, collisionRadius);
+                        entitiesHit.remove(caster);
+                        if (!entitiesHit.isEmpty()) // if entity hit
+                        {
+                            this.cancel();
+                            explodeFireball(location, caster, blastRadius);
+                        } else
+                        {
+                            caster.getWorld().spawnParticle(Particle.SMOKE_NORMAL, location, 1, 0, 0, 0, 0);
+                        }
+                    }
+
+                } else
+                {
+                    this.cancel();
+                }
+            }
+        };
+        fireballTask.runTaskTimer(plugin, 0, 1L);
+    }
+
+    public void explodeFireball(Location location, LivingEntity caster, double blastRadius)
+    {
+        location.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, location,
+                1, 0, 0, 0, 0);
+
+        // get all entities in blast radius
+        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, blastRadius, blastRadius, blastRadius);
+        entitiesHit.remove(caster);
+        if (!entitiesHit.isEmpty())
+        {
+            for (Entity entity : entitiesHit)
+            {
+                if (entity instanceof LivingEntity)
+                {
+                    if (regProtManager.isLocationPVPEnabled(caster, entity.getLocation()))
+                    {
+                        LivingEntity livingEntity = (LivingEntity) entity;
+
+                        // do something to each entity
+                        regProtManager.tagEntity(livingEntity, caster);
+                        livingEntity.setFireTicks(burnDuration * 20);
+                        livingEntity.damage(damage, caster);
+                    }
+                }
+            }
+        }
+    }
+
+    private void spawnFireball(LivingEntity caster, Location location, Vector direction, double stepSize)
+    {
+        double spacing = 0.1;
+        double start = -0.1;
+        double end = 0.1;
+        double x = direction.getX();
+        double y = direction.getY();
+        double z = direction.getZ();
+        stepSize *= 1.6;
+
+        for (double ii = start; ii <= end; ii+=spacing)
+            for (double jj = start; jj <= end; jj+=spacing)
+                for (double kk = start; kk <= end; kk+=spacing)
+                {
+                    caster.getWorld().spawnParticle(Particle.FLAME, location.clone().add(ii,jj,kk),0, x,y,z, stepSize);
+                }
+    }
+
+    public ItemStack getAbilityItem (JavaPlugin plugin, Player player)
+    {
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.GRAY + "Practice makes perfect");
+        return getAbilityItem(plugin, player, lore, 2);
     }
 }
 

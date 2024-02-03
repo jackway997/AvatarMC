@@ -29,12 +29,32 @@ import java.util.*;
 
 public class Fireball extends Ability
 {
+    private long cooldown;
+    private double range; // 50
+    private long handFlameDuration; // 5s
+    private double blastRadius;
+    private double collisionRadius;
+    private int burnDuration; // 3s
+    private double damage; // 12;
+
     private Map<UUID, BukkitRunnable> activeBends = new HashMap<>();
 
     public Fireball(JavaPlugin plugin, RegionProtectionManager regProtManager)
     {
         super(plugin, regProtManager, ELEMENT_TYPE.fire, ABILITY_LEVEL.expert);
-        setCooldown(5000);
+        setCooldown(cooldown * 1000);
+    }
+
+    @Override
+    public void loadProperties()
+    {
+        this.cooldown = getConfig().getLong("Abilities.Fire.Fireball.Cooldown");
+        this.range = getConfig().getDouble("Abilities.Fire.Fireball.Range");
+        this.handFlameDuration = getConfig().getLong("Abilities.Fire.Fireball.HandFlameDuration");
+        this.blastRadius = getConfig().getDouble("Abilities.Fire.Fireball.BlastRadius");
+        this.collisionRadius = getConfig().getDouble("Abilities.Fire.Fireball.CollisionRadius");
+        this.burnDuration = getConfig().getInt("Abilities.Fire.Fireball.BurnDuration");
+        this.damage = getConfig().getDouble("Abilities.Fire.Fireball.Damage");
     }
 
     @EventHandler
@@ -142,7 +162,7 @@ public class Fireball extends Ability
                 }
             }
         };
-        cancelTask.runTaskLater(plugin,5L * 20L);
+        cancelTask.runTaskLater(plugin,handFlameDuration * 20L);
         return true;
     }
 
@@ -150,7 +170,7 @@ public class Fireball extends Ability
     {
         UUID playerUUID = caster.getUniqueId();
 
-        double maxRange = 50.0; // Adjust the maximum range as desired
+        double maxRange = range; // Adjust the maximum range as desired
         double stepSize = 1;
         Location location = getFireLoc(caster);
         Location originalLocation = location.clone();
@@ -188,17 +208,18 @@ public class Fireball extends Ability
                     if (!block.isPassable()) // if fireball hits something solid
                     {
                         this.cancel();
-                        explodeFireball(location, caster, 3);
+                        explodeFireball(location, caster, blastRadius);
 
                     } else
                     {
                         // Check to collision with entity (radius of 1)
-                        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, 1, 1, 1);
+                        Collection<Entity> entitiesHit = location.getWorld().getNearbyEntities(location, collisionRadius,
+                                collisionRadius, collisionRadius);
                         entitiesHit.remove(caster);
                         if (!entitiesHit.isEmpty()) // if entity hit
                         {
                             this.cancel();
-                            explodeFireball(location, caster, 3);
+                            explodeFireball(location, caster, blastRadius);
                         } else
                         {
                             caster.getWorld().spawnParticle(Particle.SMOKE_LARGE, location, 1, 0, 0, 0, 0);
@@ -214,7 +235,7 @@ public class Fireball extends Ability
         fireballTask.runTaskTimer(plugin, 0, 1L);
     }
 
-    public void explodeFireball(Location location, LivingEntity caster, int blastRadius)
+    public void explodeFireball(Location location, LivingEntity caster, double blastRadius)
     {
         location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location,
                 1, 0, 0, 0, 0);
@@ -234,8 +255,8 @@ public class Fireball extends Ability
 
                         // do something to each entity
                         regProtManager.tagEntity(livingEntity, caster);
-                        livingEntity.setFireTicks(3 * 20);
-                        livingEntity.damage(12, caster);
+                        livingEntity.setFireTicks(burnDuration * 20);
+                        livingEntity.damage(damage, caster);
                     }
                 }
             }
@@ -245,8 +266,8 @@ public class Fireball extends Ability
     private void spawnFireball(LivingEntity caster, Location location, Vector direction, double stepSize)
     {
         double spacing = 0.1;
-        double start = -0.1;
-        double end = 0.1;
+        double start = -0.3;
+        double end = 0.3;
         double x = direction.getX();
         double y = direction.getY();
         double z = direction.getZ();

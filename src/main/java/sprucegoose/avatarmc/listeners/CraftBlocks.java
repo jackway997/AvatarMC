@@ -1,8 +1,10 @@
 package sprucegoose.avatarmc.listeners;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
@@ -12,6 +14,7 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import sprucegoose.avatarmc.utils.AvatarIDs;
 
 public class CraftBlocks implements Listener
@@ -36,45 +39,80 @@ public class CraftBlocks implements Listener
     }
 
     @EventHandler
-    public void onItemSpawn(ItemSpawnEvent e)
-    {
-        plugin.getLogger().info("Item spawn event");
-    }
-    @EventHandler
     public void onItemDrop (PlayerDropItemEvent e)
     {
-        plugin.getLogger().info("Item drop event");
         Item drop = e.getItemDrop();
         if (AvatarIDs.itemStackHasAnyAvatarID(plugin,drop.getItemStack()))
         {
-            e.setCancelled(true);
-            e.getPlayer().getInventory().remove(drop.getItemStack());
+            drop.remove();
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClickEvent (InventoryClickEvent e) {
-        plugin.getLogger().info("Inventory click event");
-        plugin.getLogger().info("clicked inv: "+e.getClickedInventory());
-        plugin.getLogger().info("action: "+e.getAction());
-        plugin.getLogger().info("inv: "+e.getInventory());
-        plugin.getLogger().info("cursor: "+e.getCursor());
-        plugin.getLogger().info("curr item: "+e.getCurrentItem());
+//        plugin.getLogger().info("Inventory click event");
+//        plugin.getLogger().info("clicked inv: "+e.getClickedInventory());
+//        plugin.getLogger().info("action: "+e.getAction());
+//        plugin.getLogger().info("inv: "+e.getInventory());
+//        plugin.getLogger().info("cursor: "+e.getCursor());
+//        plugin.getLogger().info("curr item: "+e.getCurrentItem());
+        plugin.getLogger().info("inv_type: "+e.getInventory().getType());
+        final ItemStack cursorCopy;
+        final ItemStack currItemCopy;
+
         ItemStack cursor = e.getCursor();
+//        if(cursor!=null)
+//        {
+//            cursorCopy = cursor.clone();
+//        }
+//        else
+//        {
+//            cursorCopy = null;
+//        }
         ItemStack currItem = e.getCurrentItem();
+//        if (currItem!=null)
+//        {
+//            currItemCopy = currItem.clone();
+//
+//        else
+//        {
+//            currItemCopy = null;
+//        }
         InventoryAction action = e.getAction();
         Inventory inv = e.getInventory();
         Inventory clickedInv = e.getClickedInventory();
-        if ((AvatarIDs.itemStackHasAnyAvatarID(plugin, cursor) || AvatarIDs.itemStackHasAnyAvatarID(plugin, currItem)) &&
-                (action == InventoryAction.MOVE_TO_OTHER_INVENTORY && (inv.getType() == InventoryType.PLAYER)) ||
-                (clickedInv != null && clickedInv.getType() == InventoryType.PLAYER && !SkillMenu.isSkillMenu(e.getView().getTitle()))
-        )
+        if (AvatarIDs.itemStackHasAnyAvatarID(plugin, cursor) && clickedInv != null &&
+                !clickedInv.getType().equals(InventoryType.PLAYER) &&
+                (action == InventoryAction.PLACE_ALL ||
+                 action == InventoryAction.PLACE_ONE ||
+                 action == InventoryAction.PLACE_SOME)) // If skill and placed
         {
+            //plugin.getLogger().info("cursor: "+ cursorCopy);
+            //if (cursorCopy != null)
+            //{
+            //    inv.remove(cursorCopy);
+            //}
+            e.getWhoClicked().setItemOnCursor(new ItemStack(Material.AIR));
             e.setCancelled(true);
+            plugin.getLogger().info("removing skill from inv");
+//            BukkitRunnable removeTask = new BukkitRunnable() {
+//                @Override
+//                public void run()
+//                {
+//
+//                }
+//            };removeTask.runTaskLater(plugin, 2L);
+
         }
+        //if ((AvatarIDs.itemStackHasAnyAvatarID(plugin, cursor) || AvatarIDs.itemStackHasAnyAvatarID(plugin, currItem)) &&
+         //       (action == InventoryAction.MOVE_TO_OTHER_INVENTORY && (inv.getType() == InventoryType.PLAYER)) ||
+        //        (clickedInv != null && clickedInv.getType() == InventoryType.PLAYER && !SkillMenu.isSkillMenu(e.getView().getTitle()))
+        //)
+        //{
+        //    e.setCancelled(true);
+       //}
 
     }
-
 
     @EventHandler
     public void sheepDyeWoolEvent(SheepDyeWoolEvent e) {
