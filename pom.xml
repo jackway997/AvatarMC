@@ -90,6 +90,13 @@
           <id>CodeMC</id>
           <url>https://repo.codemc.org/repository/maven-public/</url>
       </repository>
+      <!-- MythicMobs Repo -->
+      <repository>
+          <id>nexus</id>
+          <name>Lumine Releases</name>
+          <url>https://mvn.lumine.io/repository/maven-public/</url>
+      </repository>
+
   </repositories>
 
   <dependencies>
@@ -143,6 +150,12 @@
           <groupId>me.NoChance.PvPManager</groupId>
           <artifactId>pvpmanager</artifactId>
           <version>3.12.7</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>io.lumine</groupId>
+          <artifactId>Mythic-Dist</artifactId>
+          <version>5.6.1</version>
           <scope>provided</scope>
       </dependency>
   </dependencies>

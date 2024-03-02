@@ -310,10 +310,14 @@ public class ConfigManager {
             config.addDefault("Abilities.Earth.ShockWave.KnockUpVelocity", 1.3);
             config.addDefault("Abilities.Earth.ShockWave.Damage", 8);
 
+            config.addDefault("Abilities.Earth.RockFall.Enabled", true);
+            config.addDefault("Abilities.Earth.RockFall.Cooldown", 1);
+            config.addDefault("Abilities.Earth.RockFall.Range", 15);
+
             // Fire
             config.addDefault("Abilities.Fire.Enchant.Enabled", true);
             config.addDefault("Abilities.Fire.Enchant.Cooldown", 30);
-            config.addDefault("Abilities.Fire.Enchant.Duration", 20);
+            config.addDefault("Abilities.Fire.Enchant.--Duration", 20);
             config.addDefault("Abilities.Fire.Enchant.TrueBurnDuration", 8);
             config.addDefault("Abilities.Fire.Enchant.TickDamage", 2);
 

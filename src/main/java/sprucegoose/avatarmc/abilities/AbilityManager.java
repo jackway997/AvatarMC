@@ -86,6 +86,8 @@ public class AbilityManager implements Listener
         registerAbility(new CryoFreeze(plugin, regProtManager));
         registerAbility(new FreezeAura(plugin, regProtManager));
         registerAbility(new WaterWhip(plugin, regProtManager));
+        registerAbility(new RockFall(plugin, regProtManager));
+
     }
 
     private void registerAbility(Ability ability)
